@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MGHR Manager - Maa Gayatri Hotel And Restaurant</title>
+  <meta name="theme-color" content="#D4A84B">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MGHR Manage">
+  <style>
+    :root {
+      --bg: #121212;
+      --bg2: #1c1c1c;
+      --bg3: #262626;
+      --card: #181818;
+      --border: #333333;
+      --border-light: #444444;
+      --text: #ffffff;
+      --text2: #e0e0e0;
+      --text3: #9e9e9e;
+      --amber: #D4A84B;
+      --amber-dim: rgba(212,168,75,0.15);
+      --green: #4A9D62;
+      --green-dim: rgba(74,157,98,0.15);
+      --red: #C0392B;
+      --red-dim: rgba(192,57,43,0.15);
+      --blue: #3498DB;
+      --blue-dim: rgba(52,152,219,0.15);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.4;
+      padding-bottom: 74px; /* Space for bottom nav bar */
+    }
+
+    /* ── LOGIN OVERLAY ── */
+    #loginScreen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #0f0f0f;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .login-box {
+      width: 100%; max-width: 360px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px 22px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      text-align: center;
+    }
+    .login-logo { font-size: 42px; margin-bottom: 8px; }
+    .login-box h2 { font-size: 19px; color: var(--amber); margin-bottom: 4px; font-weight: 700; }
+    .login-box p { font-size: 12px; color: var(--text3); margin-bottom: 22px; }
+    .form-group { margin-bottom: 14px; text-align: left; }
+    .form-label { font-size: 12px; color: var(--text3); display: block; margin-bottom: 5px; font-weight: 500; }
+    .form-input {
+      width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); font-size: 15px; outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--amber); }
+    .btn-login {
+      width: 100%; padding: 13px; border-radius: var(--radius-sm);
+      background: var(--amber); color: #111; font-weight: 700; font-size: 15px;
+      border: none; cursor: pointer; margin-top: 10px; transition: filter 0.15s;
+    }
+    .btn-login:hover { filter: brightness(1.1); }
+    .login-error { color: var(--red); font-size: 12px; margin-top: 12px; display: none; }
+
+    /* ── HEADER ── */
+    .app-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(26,26,26,0.96); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-info h1 { font-size: 16px; font-weight: 700; color: #fff; }
+    .header-info span { font-size: 11px; color: var(--amber); font-weight: 600; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .header-btn {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text2); font-size: 12px; padding: 6px 10px;
+      border-radius: var(--radius-sm); cursor: pointer;
+    }
+    .header-btn:hover { border-color: var(--amber); }
+    .online-indicator {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green); display: inline-block; margin-right: 4px;
+    }
+
+    /* ── NAVIGATION (BOTTOM BAR) ── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      background: #181818; border-top: 1px solid var(--border);
+      display: flex; height: 60px;
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      color: var(--text3); cursor: pointer; border: none; background: none;
+      font-size: 11px; font-weight: 600; transition: color 0.15s;
+    }
+    .nav-item.active { color: var(--amber); }
+    .nav-icon { font-size: 18px; }
+
+    /* ── TAB VIEWS ── */
+    .view-content { display: none; padding: 14px 14px 20px; max-width: 720px; margin: 0 auto; }
+    .view-content.active { display: block; }
+
+    /* ── DASHBOARD METRICS ── */
+    .section-title {
+      font-size: 13px; font-weight: 700; color: var(--amber);
+      text-transform: uppercase; letter-spacing: 0.8px; margin: 16px 0 10px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    }
+    @media (min-width: 480px) {
+      .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .metric-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 12px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .metric-card.highlight {
+      background: linear-gradient(135deg, rgba(212,168,75,0.15) 0%, rgba(20,20,20,0.9) 100%);
+      border-color: var(--amber-muted);
+    }
+    .metric-label { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; }
+    .metric-value { font-family: Consolas, monospace; font-size: 20px; font-weight: 700; color: #fff; }
+    .metric-card.highlight .metric-value { color: var(--amber); }
+    .metric-sub { font-size: 11px; color: var(--text3); }
+
+    /* ── DURATION SELECTOR ── */
+    .duration-pills {
+      display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 10px;
+      scrollbar-width: none;
+    }
+    .duration-pills::-webkit-scrollbar { display: none; }
+    .pill-btn {
+      padding: 7px 14px; border-radius: 20px;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text2); font-size: 12px; font-weight: 600;
+      white-space: nowrap; cursor: pointer; transition: all 0.15s;
+    }
+    .pill-btn.active { background: var(--amber); color: #111; border-color: var(--amber); }
+
+    .custom-range-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px; margin-bottom: 12px;
+      display: none; flex-direction: column; gap: 8px;
+    }
+    .custom-range-box.show { display: flex; }
+    .range-inputs { display: flex; gap: 8px; }
+    .range-inputs input {
+      flex: 1; padding: 8px; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: #fff; font-size: 13px; outline: none;
+    }
+    .range-apply-btn {
+      background: var(--amber); color: #111; font-weight: 700; border: none;
+      border-radius: var(--radius-sm); padding: 8px 14px; cursor: pointer;
+    }
+
+    /* ── SALES LOG CARDS ── */
+    .filter-search-bar {
+      margin-bottom: 12px;
+      display: flex; gap: 8px;
+    }
+    .filter-input {
+      flex: 1; padding: 10px 14px; background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: #fff; font-size: 13px; outline: none;
+    }
+    .filter-input:focus { border-color: var(--amber); }
+
+    .sales-list { display: flex; flex-direction: column; gap: 8px; }
+    .sale-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .sale-top { display: flex; justify-content: space-between; align-items: center; }
+    .sale-bill { font-family: Consolas, monospace; font-size: 13px; font-weight: 700; color: #fff; }
+    .sale-total { font-family: Consolas, monospace; font-size: 16px; font-weight: 700; color: var(--amber); }
+    .sale-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 11px; }
+    .tag {
+      padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .tag-table { background: var(--amber-dim); color: var(--amber); }
+    .tag-takeaway { background: var(--green-dim); color: var(--green); }
+    .tag-time { background: var(--bg3); color: var(--text3); }
+    .tag-reprint { background: var(--blue-dim); color: var(--blue); }
+    .tag-edit { background: var(--red-dim); color: var(--red); }
+    .sale-items { font-size: 12px; color: var(--text3); line-height: 1.35; margin-top: 2px; }
+
+    /* ── MENU EDITOR ── */
+    .menu-cat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
+    }
+    .menu-cat-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px;
+    }
+    .menu-cat-title { font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
+    .menu-item-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid #222; gap: 8px;
+    }
+    .menu-item-row:last-child { border-bottom: none; }
+    .item-inputs { flex: 1; display: flex; gap: 8px; align-items: center; }
+    .item-name-input {
+      flex: 1; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 4px; padding: 6px 8px; color: #fff; font-size: 13px; outline: none;
+    }
+    .item-price-input {
+      width: 72px; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 4px; padding: 6px 8px; color: var(--amber);
+      font-size: 13px; font-family: Consolas, monospace; text-align: right; outline: none;
+    }
+    .item-btn {
+      background: none; border: 1px solid var(--border); color: var(--text3);
+      border-radius: 4px; padding: 6px 8px; cursor: pointer; font-size: 12px;
+    }
+    .item-btn:hover { color: var(--red); border-color: var(--red); }
+    .add-dish-btn {
+      width: 100%; padding: 8px; background: var(--bg3); border: 1px dashed var(--border);
+      color: var(--amber); border-radius: var(--radius-sm); font-size: 12px;
+      font-weight: 600; cursor: pointer; margin-top: 8px;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.85); align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; width: 100%; max-width: 420px;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; color: var(--amber); margin-bottom: 12px; }
+
+    /* ── POS SYNC BANNER ── */
+    .sync-banner {
+      display: none; align-items: center; justify-content: space-between; gap: 10px;
+      margin: 8px 12px 0; padding: 10px 14px; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600; border: 1px solid var(--border);
+    }
+    .sync-banner.show { display: flex; }
+    .sync-banner.busy  { background: var(--blue-dim);  border-color: var(--blue);  color: var(--blue); }
+    .sync-banner.ok    { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+    .sync-banner.error { background: var(--red-dim);   border-color: var(--red);   color: #ff8a7d; }
+
+    /* ── TOAST ── */
+    #manageToast {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 9px 18px; border-radius: 30px;
+      font-size: 12px; font-weight: 600; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      display: none; animation: fadeIn 0.2s; white-space: nowrap;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">🏨</div>
+      <h2>माँ गायत्री रेस्टोरेंट</h2>
+      <p>Owner Dashboard &amp; Live Reports</p>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Owner Email</label>
+          <input type="email" id="loginUser" class="form-input" placeholder="Enter owner email" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="loginPass" class="form-input" placeholder="Enter password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn-login">Login to Dashboard</button>
+        <div id="loginError" class="login-error">Wrong email or password!</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP HEADER -->
+  <header class="app-header">
+    <div class="header-info">
+      <h1>माँ गायत्री होटेल</h1>
+      <span><span class="online-indicator"></span>LIVE REPORTING</span>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" id="syncBtn" onclick="syncWithCloud()" title="Sync with POS">🔄 Sync</button>
+      <button class="header-btn" onclick="handleLogout()" title="Logout">🚪</button>
+    </div>
+  </header>
+
+  <!-- POS SYNC STATUS BANNER -->
+  <div id="syncBanner" class="sync-banner">
+    <span id="syncBannerText"></span>
+    <button class="header-btn" id="syncRetryBtn" style="display:none;padding:5px 12px;" onclick="syncWithCloud()">🔁 Retry</button>
+  </div>
+
+  <!-- TAB 1: DASHBOARD -->
+  <main id="tabDashboard" class="view-content active">
+    <!-- Duration filter pills -->
+    <div class="duration-pills">
+      <button class="pill-btn active" onclick="setPeriod('today')">Today</button>
+      <button class="pill-btn" onclick="setPeriod('yesterday')">Yesterday</button>
+      <button class="pill-btn" onclick="setPeriod('week')">This Week</button>
+      <button class="pill-btn" onclick="setPeriod('month')">This Month</button>
+      <button class="pill-btn" onclick="setPeriod('year')">This Year</button>
+      <button class="pill-btn" onclick="toggleCustomRange()">Custom 📅</button>
+    </div>
+
+    <!-- Custom date range selector -->
+    <div id="customRangeBox" class="custom-range-box">
+      <div class="range-inputs">
+        <input type="date" id="rangeStart">
+        <input type="date" id="rangeEnd">
+      </div>
+      <button class="range-apply-btn" onclick="applyCustomRange()">Filter Custom Range</button>
+    </div>
+
+    <!-- Selected Period Highlights -->
+    <div class="section-title">
+      <span id="periodHeading">TODAY'S SUMMARY</span>
+      <span id="periodDateRange" style="font-size:11px;color:var(--text3);font-family:Consolas,monospace;"></span>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card highlight">
+        <span class="metric-label">Sales Revenue</span>
+        <span class="metric-value" id="valRevenue">₹0</span>
+        <span class="metric-sub" id="subRevenue">0 Bills</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Parcel Sales</span>
+        <span class="metric-value" id="valParcel">₹0</span>
+        <span class="metric-sub" id="subParcel">0 Parcels</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Dine-in Sales</span>
+        <span class="metric-value" id="valDineIn">₹0</span>
+        <span class="metric-sub" id="subDineIn">0 Tables</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">GST Collected</span>
+        <span class="metric-value" id="valGst">₹0</span>
+        <span class="metric-sub">5% tax</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Discounts</span>
+        <span class="metric-value" id="valDiscount">₹0</span>
+        <span class="metric-sub">Total saved</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Avg Bill Value</span>
+        <span class="metric-value" id="valAvg">₹0</span>
+        <span class="metric-sub">Per customer</span>
+      </div>
+    </div>
+
+    <!-- Quick Comparators -->
+    <div class="section-title">QUICK OVERVIEW</div>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <span class="metric-label">Yesterday</span>
+        <span class="metric-value" id="compYesterday">₹0</span>
+        <span class="metric-sub" id="compYesterdayCount">0 bills</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">This Week</span>
+        <span class="metric-value" id="compWeek">₹0</span>
+        <span class="metric-sub" id="compWeekCount">7-day total</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">This Month</span>
+        <span class="metric-value" id="compMonth">₹0</span>
+        <span class="metric-sub" id="compMonthCount">Month to date</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">This Year</span>
+        <span class="metric-value" id="compYear">₹0</span>
+        <span class="metric-sub">Yearly total</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Total Recorded</span>
+        <span class="metric-value" id="compAllTime">₹0</span>
+        <span class="metric-sub" id="compAllTimeCount">0 lifetime bills</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Audit Log</span>
+        <span class="metric-value" id="compAuditCount">0</span>
+        <span class="metric-sub">Edits &amp; reprints</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- TAB 2: LIVE SALES & AUDIT LOG -->
+  <main id="tabSales" class="view-content">
+    <div class="filter-search-bar">
+      <input type="text" id="salesSearch" class="filter-input" placeholder="Search bill no, table, item..." oninput="renderSalesLogList()">
+      <button class="header-btn" onclick="exportFilteredSalesCSV()">Export CSV</button>
+    </div>
+    <div class="sales-list" id="salesLogList">
+      <!-- Populated dynamically -->
+    </div>
+  </main>
+
+  <!-- TAB 3: MENU EDITOR -->
+  <main id="tabMenu" class="view-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:13px;font-weight:700;color:var(--amber);">MENU &amp; PRICE MANAGER</span>
+      <button class="header-btn" onclick="promptAddCategory()">+ New Category</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;">
+      <span id="menuSyncStatus" style="font-size:12px;color:var(--text3);">Changes are sent to the POS automatically.</span>
+      <div style="display:flex;gap:6px;">
+        <button class="header-btn" onclick="restoreFullMenu()">↩ Restore full menu</button>
+        <button class="header-btn" onclick="broadcastMenuUpdate()">📤 Send menu to POS</button>
+      </div>
+    </div>
+    <div id="menuCategoriesContainer">
+      <!-- Populated dynamically -->
+    </div>
+  </main>
+
+  <!-- TAB 4: SETTINGS / FIREBASE SYNC -->
+  <main id="tabSettings" class="view-content">
+    <div class="section-title">CLOUD (FIREBASE)</div>
+    <div class="metric-card" style="margin-bottom:14px;">
+      <p id="cloudStatusLine" style="font-size:13px;color:var(--text2);margin-bottom:10px;">Checking cloud connection…</p>
+      <div style="display:flex;gap:8px;">
+        <button class="header-btn" style="padding:10px 14px;" onclick="clearAllCachedData()">Clear Local Cache</button>
+      </div>
+    </div>
+
+    <div class="section-title">OFFLINE CACHING STATUS</div>
+    <div class="metric-card">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #222;">
+        <span style="color:var(--text3);">Cached Bills</span>
+        <span id="cacheBillsCount" style="font-weight:700;">0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #222;">
+        <span style="color:var(--text3);">Audit Events</span>
+        <span id="cacheAuditCount" style="font-weight:700;">0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;">
+        <span style="color:var(--text3);">Menu Dishes</span>
+        <span id="cacheDishesCount" style="font-weight:700;">0</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('tabDashboard', this)">
+      <span class="nav-icon">📊</span>
+      <span>Reports</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('tabSales', this)">
+      <span class="nav-icon">📋</span>
+      <span>Sales Log</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('tabMenu', this)">
+      <span class="nav-icon">🍽️</span>
+      <span>Menu Edit</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('tabSettings', this)">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- TOAST -->
+  <div id="manageToast"></div>
+
+  <!-- FIREBASE SCRIPTS -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+  // ═══════════════════════════════════════════════════════════════
+  //  FIREBASE CONFIG — paste YOUR values here (Firebase console →
+  //  Project settings → Your apps → Web app → firebaseConfig).
+  //  Use the SAME values in index.html and manage.html.
+  //  (This config is not a secret; your Firestore rules + login protect the data.)
+  // ═══════════════════════════════════════════════════════════════
+  const FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyD_vcDaXypwPKVWRHnoxs0RgWXz2L8-FV0',
+    authDomain: 'gayatri-hotel.firebaseapp.com',
+    projectId: 'gayatri-hotel',
+    storageBucket: 'gayatri-hotel.firebasestorage.app',
+    messagingSenderId: '830793741011',
+    appId: '1:830793741011:web:e94b5dc45aee8fa7d91a26'
+  };
+
+  // ─── FULL DEFAULT MENU (same as the POS's built-in menu; used the first time) ───
+  const DEFAULT_MENU = [
+    {
+      id: 'container', label: 'कंटेनर', icon: '🧈',
+      items: [
+        { id: 'container', name: 'कंटेनर', price: 10 },
+        { id: 'container5', name: 'कंटेनर', price: 15 }
+      ]
+    },
+    {
+      id: 'tandoor_chapati', label: 'रोटी', icon: '🫓',
+      items: [
+        { id: 'sadi_chapati', name: 'साधी चपाती', price: 12 },
+        { id: 'butter_chapati', name: 'बटर चपाती', price: 15 },
+        { id: 'sadi_tandur', name: 'साधी तंदूर', price: 15 },
+        { id: 'butter_tandur', name: 'बटर तंदूर', price: 20 },
+        { id: 'kulcha', name: 'कुलचा', price: 35 },
+        { id: 'butter_kulcha', name: 'बटर कुलचा', price: 40 },
+        { id: 'nan', name: 'नान', price: 35 },
+        { id: 'butter_nan', name: 'बटर नान', price: 40 },
+        { id: 'garlic_nan', name: 'गार्लिक नान', price: 50 },
+        { id: 'sadha_paratha', name: 'साधा पराठा', price: 20 },
+        { id: 'sadha_butter_paratha', name: 'साधा बटर पराठा', price: 30 },
+        { id: 'masala_paratha', name: 'मसाला पराठा', price: 40 },
+        { id: 'tandur_lachha_paratha', name: 'तंदूर लच्छा पराठा', price: 20 },
+        { id: 'tandur_butter_lachha_paratha', name: 'तंदूर बटर लच्छा पराठा', price: 30 }
+      ]
+    },
+    {
+      id: 'Breaverages', label: 'पेय', icon: '🥛',
+      items: [
+        { id: 'pani_water_bottel_10', name: 'पाणी बोटल छोटी', price: 10 },
+        { id: 'pani_water_bottel_20', name: 'पाणी बोटल मोठी', price: 20 },
+        { id: 'lassi_20', name: 'लस्सी हाफ', price: 20 },
+        { id: 'lassi_35', name: 'लस्सी फूल', price: 35 },
+        { id: 'butter_lassi_25', name: 'बटर लस्सी हाफ', price: 25 },
+        { id: 'butter_lassi_40', name: 'बटर लस्सी फूल', price: 40 },
+        { id: 'cold_drink25', name: 'कोल्ड ड्रिंक', price: 25 },
+        { id: 'cold_drink30', name: 'कोल्ड ड्रिंक', price: 30 },
+        { id: 'cold_drink40', name: 'कोल्ड ड्रिंक', price: 40 },
+        { id: 'cold_drink45', name: 'कोल्ड ड्रिंक', price: 45 },
+        { id: 'tea', name: 'चाय', price: 10 },
+        { id: 'coffei', name: 'कॉफी', price: 25 }
+      ]
+    },
+    {
+      id: 'starter', label: 'स्टार्टर', icon: '🍢',
+      items: [
+        { id: 'vej_lollipop', name: 'वेज लॉलीपॉप', price: 150 },
+        { id: 'panir_chilli', name: 'पनिर चिल्ली', price: 150 },
+        { id: 'finger_chips', name: 'फिंगर चिप्स', price: 90 },
+        { id: 'vej_crispy', name: 'वेज क्रिस्पी', price: 150 },
+        { id: 'panir_65', name: 'पनिर ६५', price: 170 },
+        { id: 'panir_lollipop', name: 'पनिर लॉलीपॉप', price: 200 }
+      ]
+    },
+    {
+      id: 'papad', label: 'पापड', icon: '🥖',
+      items: [
+        { id: 'roast_papad', name: 'रोस्ट पापड', price: 20 },
+        { id: 'fry_papad', name: 'फ्राय पापड', price: 25 },
+        { id: 'masala_papad', name: 'मसाला पापड', price: 30 },
+        { id: 'roast_masala_papad', name: 'रोस्ट मसाला पापड', price: 30 }
+      ]
+    },
+    {
+      id: 'soup', label: 'सुप', icon: '🍲',
+      items: [
+        { id: 'manchau_soup', name: 'मनचाऊ सुप', price: 70 },
+        { id: 'hot_and_sour_soup', name: 'हॉट अँन्ड सोर सुप', price: 70 },
+        { id: 'tomato_soup', name: 'टोमॅटो सुप', price: 70 }
+      ]
+    },
+    {
+      id: 'salad', label: 'सलाद', icon: '🥗',
+      items: [
+        { id: 'green_salad', name: 'ग्रीन सलाद', price: 50 },
+        { id: 'jain_salad', name: 'जैन सलाद', price: 40 }
+      ]
+    },
+    {
+      id: 'dal_ka_kamal', label: 'दाल का कमाल', icon: '🫘',
+      items: [
+        { id: 'jira_dal', name: 'जिरा दाल', price: 100 },
+        { id: 'half_jeera_dal', name: 'हाफ जिरा दाल', price: 55 },
+        { id: 'dal_fry', name: 'दाल फ्राय', price: 110 },
+        { id: 'half_dal_fry', name: 'हाफ दाल फ्राय', price: 60 },
+        { id: 'butter_dal_fry', name: 'बटर दाल फ्राय', price: 120 },
+        { id: 'half_butter_dal_fry', name: 'हाफ बटर दाल फ्राय', price: 80 },
+        { id: 'dal_tadka', name: 'दाल तडका', price: 135 },
+        { id: 'half_dal_tadka', name: 'हाफ दाल तडका', price: 80 },
+        { id: 'dal_kolhapuri', name: 'दाल कोल्हापुरी', price: 135 },
+        { id: 'half_dal_kolhapuri', name: 'हाफ दाल कोल्हापुरी', price: 75 },
+        { id: 'dal_vachadi', name: 'दाल वच्हाडी', price: 140 },
+        { id: 'half_varhadi_dal', name: 'हाफ वऱ्हाडी दाल', price: 90 },
+        { id: 'dal_mugalai', name: 'दाल मुगलाई', price: 170 }
+      ]
+    },
+    {
+      id: 'rice', label: 'राईस', icon: '🍚',
+      items: [
+        { id: 'plain_rice', name: 'प्लेन राईस', price: 80 },
+        { id: 'half_plain_rice', name: 'हाफ प्लेन राईस', price: 40 },
+        { id: 'jira_rice', name: 'जिरा राईस', price: 90 },
+        { id: 'half_jeera_rice', name: 'हाफ जिरा राईस', price: 50 },
+        { id: 'steam_rice', name: 'स्टीम राईस', price: 100 },
+        { id: 'half_steam_rice', name: 'हाफ स्टीम राईस', price: 50 },
+        { id: 'garlic_rice', name: 'गार्लिक राईस', price: 140 },
+        { id: 'namdeo_rice', name: 'नामदेव राईस', price: 130 },
+        { id: 'masala_rice', name: 'मसाला राईस', price: 120 },
+        { id: 'dal_khichadi', name: 'दाल खिचडी', price: 120 },
+        { id: 'vej_pulav', name: 'वेज पुलाव', price: 120 },
+        { id: 'panir_pulav', name: 'पनिर पुलाव', price: 160 },
+        { id: 'vej_biryani', name: 'वेज बिर्याणी', price: 130 },
+        { id: 'vej_panir_biryani', name: 'वेज पनिर बिर्याणी', price: 160 },
+        { id: 'vej_hydrabadi_biryani', name: 'वेज हैद्राबादी बिर्याणी', price: 160 },
+        { id: 'vej_handi_biryani', name: 'वेज हंडी बिर्याणी', price: 140 },
+        { id: 'panir_handi_biryani', name: 'पनिर हंडी बिर्याणी', price: 160 }
+      ]
+    },
+    {
+      id: 'panir_ka_kamal', label: 'पनिर का कमाल', icon: '🧈',
+      items: [
+        { id: 'palak_panir', name: 'पालक पनिर', price: 150 },
+        { id: 'panir_matar', name: 'पनिर मटर', price: 150 },
+        { id: 'panir_kadai', name: 'पनिर कढई', price: 160 },
+        { id: 'panir_tawa', name: 'पनिर तवा', price: 170 },
+        { id: 'panir_vanhadi', name: 'पनिर वन्हाडी', price: 150 },
+        { id: 'panir_handi', name: 'पनिर हंडी', price: 170 },
+        { id: 'panir_bhurji_dry', name: 'पनिर भुर्जी ड्राय', price: 175 },
+        { id: 'panir_bhurji_curry', name: 'पनिर भुर्जी करी', price: 170 },
+        { id: 'panir_butter_masala', name: 'पनिर बटर मसाल', price: 150 },
+        { id: 'panir_tikka_masala', name: 'पनिर टिक्का मसाला', price: 170 },
+        { id: 'panir_tufani', name: 'पनिर तुफानी', price: 170 },
+        { id: 'panir_masala', name: 'पनिर मसाला', price: 150 },
+        { id: 'shahi_panir', name: 'शाही पनिर', price: 150 },
+        { id: 'panir_kolhapuri', name: 'पनिर कोल्हापुरी', price: 170 },
+        { id: 'panir_sagwala', name: 'पनिर सागवाल', price: 160 },
+        { id: 'panir_hydrabadi', name: 'पनिर हैद्राबादी', price: 170 },
+        { id: 'panir_chatpata', name: 'पनिर चटपटा', price: 160 },
+        { id: 'panir_takatak', name: 'पनिर टकाटक', price: 170 },
+        { id: 'panir_korma', name: 'पनिर कोरमा', price: 150 },
+        { id: 'chij_panir_butter_masala', name: 'चिज पनिर बटर मसाला', price: 180 },
+        { id: 'lachha_panir', name: 'लच्छा पनिर', price: 170 },
+        { id: 'panir_angara', name: 'पनिर अंगारा', price: 180 },
+        { id: 'panir_jayapuri', name: 'पनिर जयपुरी', price: 180 },
+        { id: 'panir_sawji', name: 'पनिर सावजी', price: 150 },
+        { id: 'panir_kofta', name: 'पनिर कोफ्ता', price: 180 }
+      ]
+    },
+    {
+      id: 'panir_special', label: 'पनिर स्पेशल', icon: '🧈',
+      items: [
+        { id: 'panir_mili_juli', name: 'पनिर मिली जुली', price: 250 },
+        { id: 'panir_lahori', name: 'पनिर लाहोरी', price: 250 },
+        { id: 'panir_lara', name: 'पनिर लारा', price: 250 },
+        { id: 'panir_afghani', name: 'पनिर अफगानी', price: 250 },
+        { id: 'panir_pasanda', name: 'पनिर पसंदा', price: 250 },
+        { id: 'panir_chij_ball_curry', name: 'पनिर चिज बॉल करी', price: 250 },
+        { id: 'panir_tiranga', name: 'पनिर तिरंगा', price: 300 },
+        { id: 'panir_patiyala', name: 'पनिर पटीयाला', price: 250 },
+        { id: 'panir_do_pyaja', name: 'पनिर दो प्याजा', price: 250 }
+      ]
+    },
+    {
+      id: 'veg_sabji', label: 'वेज सब्जी', icon: '🥘',
+      items: [
+        { id: 'jira_aalu', name: 'जिरा आलू', price: 90 },
+        { id: 'baingan_bharata', name: 'बैगन भरता', price: 110 },
+        { id: 'baingan_masala', name: 'बैगन मसाला', price: 110 },
+        { id: 'bhendi_masala', name: 'भेंडी मसाला', price: 150 },
+        { id: 'green_peas_masala', name: 'ग्रीन पिस मसाला', price: 135 },
+        { id: 'chana_masala', name: 'चना मसाला', price: 130 },
+        { id: 'aalu_matar', name: 'आलू मटर', price: 125 },
+        { id: 'dam_aalu', name: 'दम आलू', price: 130 },
+        { id: 'plain_palak', name: 'प्लेन पालक', price: 120 },
+        { id: 'shev_bhaji', name: 'शेव भाजी', price: 125 },
+        { id: 'aalu_gobhi_matar', name: 'आलू गोबी मटर', price: 135 },
+        { id: 'aalu_gobhi_masala', name: 'आलू गोबी मसाला', price: 130 },
+        { id: 'aalu_palak', name: 'आलू पालक', price: 120 },
+        { id: 'gobhi_masala', name: 'गोबी मसाला', price: 125 },
+        { id: 'gobhi_matar', name: 'गोबी मटर', price: 130 }
+      ]
+    },
+    {
+      id: 'special_sabji', label: 'स्पेशल सब्जी', icon: '🍛',
+      items: [
+        { id: 'mix_vej', name: 'मिक्स वेज', price: 140 },
+        { id: 'vej_kolhapuri', name: 'वेज कोल्हापुरी', price: 140 },
+        { id: 'vej_tufani', name: 'वेज तुफानी', price: 150 },
+        { id: 'vej_handi', name: 'वेज हन्डी', price: 150 },
+        { id: 'vej_tawa', name: 'वेज तवा', price: 150 },
+        { id: 'vej_kadhai', name: 'वेज कढाई', price: 150 },
+        { id: 'stop_capsicum', name: 'स्टॉप कॅप्सीकम', price: 140 },
+        { id: 'stop_tomato', name: 'स्टॉप टोमॅटो', price: 140 },
+        { id: 'methi_matar', name: 'मेथी मटर', price: 140 },
+        { id: 'methi_matar_malai', name: 'मेथी मटर मलाई', price: 170 },
+        { id: 'vej_hydrabadi', name: 'वेज हैद्राबादी', price: 150 },
+        { id: 'vej_kima_kasturi', name: 'वेज किमा कस्तुरी', price: 150 },
+        { id: 'vej_jayapuri', name: 'वेज जयपुरी', price: 150 },
+        { id: 'vej_maratha', name: 'वेज मराठा', price: 150 },
+        { id: 'vej_bhuna', name: 'वेज भूना', price: 150 },
+        { id: 'vej_angara', name: 'वेज अंगारा', price: 160 },
+        { id: 'vej_patiyala', name: 'वेज पटियाला', price: 160 },
+        { id: 'vej_andakari', name: 'वेज अंडाकरी', price: 140 },
+        { id: 'patodi', name: 'पाटोडी', price: 150 },
+        { id: 'vej_mili_juli', name: 'वेज मिली जुली', price: 200 },
+        { id: 'vej_tiranga', name: 'वेज तिरंगा', price: 200 }
+      ]
+    },
+    {
+      id: 'kofta_special', label: 'कोफ्ता स्पेशल', icon: '🥙',
+      items: [
+        { id: 'vej_kofta', name: 'वेज कोफ्ता', price: 140 },
+        { id: 'panir_kofta', name: 'पनिर कोफ्ता', price: 180 },
+        { id: 'malai_kofta', name: 'मलाई कोफ्ता', price: 140 },
+        { id: 'vej_punjabi_kofta', name: 'वेज पंजाबी कोफ्ता', price: 150 },
+        { id: 'vej_palak_kofta', name: 'वेज पालक कोफ्ता', price: 170 },
+        { id: 'panir_punjabi_kofta', name: 'पनिर पंजाबी कोफ्ता', price: 170 },
+        { id: 'panir_palak_kofta', name: 'पनिर पालक कोफ्ता', price: 180 },
+        { id: 'nargis_kofta', name: 'नरगिस कोफ्ता', price: 250 },
+        { id: 'gayatri_special_sabji1', name: 'गायत्री स्पेशल सब्जी', price: 300 }
+      ]
+    },
+    {
+      id: 'kaju_special', label: 'काजू स्पेशल', icon: '🥜',
+      items: [
+        { id: 'kaju_curry', name: 'काजू करी', price: 190 },
+        { id: 'kaju_masala', name: 'काजू मसाला', price: 190 },
+        { id: 'panir_kaju_curry', name: 'पनिर काजू करी', price: 190 },
+        { id: 'panir_kaju_masala', name: 'पनिर काजू मसाला', price: 190 },
+        { id: 'kaju_khoya', name: 'काजू खोया', price: 190 },
+        { id: 'kaju_mawa', name: 'काजू मावा', price: 200 }
+      ]
+    },
+    {
+      id: 'mushroom', label: 'मशरूम', icon: '🍄',
+      items: [
+        { id: 'mushroom_masala', name: 'मशरूम मसाला', price: 190 },
+        { id: 'mushroom_curry', name: 'मशरूम करी', price: 190 },
+        { id: 'panir_mushroom_masala', name: 'पनिर मशरूम मसाला', price: 200 },
+        { id: 'mushroom_panir_kadai', name: 'मशरूम पनिर कढई', price: 200 }
+      ]
+    },
+    {
+      id: 'vanhadi_special', label: 'वन्हाडी स्पेशल', icon: '🥘',
+      items: [
+        { id: 'gayatri_special_sabji', name: 'गायत्री स्पेशल सब्जी', price: 300 },
+        { id: 'panir_vanhadi1', name: 'पनिर वन्हाडी', price: 150 },
+        { id: 'vej_andakari', name: 'वेज अंडाकरी', price: 140 },
+        { id: 'patodi', name: 'पाटोडी', price: 150 },
+        { id: 'gud_bhaji', name: 'गुड भाजी', price: 150 },
+        { id: 'shev_tamatar', name: 'शेव टमाटर', price: 130 }
+      ]
+    },
+    {
+      id: 'ice-creme', label: 'आइस क्रीम', icon: '🍧',
+      items: [
+        { id: 'ice_Creme_10', name: 'आइसक्रीम', price: 10 },
+        { id: 'ice_Creme_15', name: 'आइसक्रीम', price: 15 },
+        { id: 'ice_Creme_20', name: 'आइसक्रीम', price: 20 },
+        { id: 'ice_Creme_25', name: 'आइसक्रीम', price: 25 },
+        { id: 'ice_Creme_30', name: 'आइसक्रीम', price: 30 },
+        { id: 'ice_Creme_35', name: 'आइसक्रीम', price: 35 },
+        { id: 'ice_Creme_40', name: 'आइसक्रीम', price: 40 },
+        { id: 'ice_Creme_45', name: 'आइसक्रीम', price: 45 },
+        { id: 'ice_Creme_50', name: 'आइसक्रीम', price: 50 },
+        { id: 'ice_Creme_55', name: 'आइसक्रीम', price: 55 },
+        { id: 'ice_Creme_60', name: 'आइसक्रीम', price: 60 }
+      ]
+    },
+    {
+      id: 'sweet', label: 'स्वीट', icon: '🍮',
+      items: [
+        { id: 'gulab_jamun', name: 'गुलाब जामुन', price: 20 },
+        { id: 'kala_jamun', name: 'काला जामुन', price: 30 },
+        { id: 'rasgulla', name: 'रसगुल्ला', price: 20 },
+        { id: 'chamcham', name: 'चमचम', price: 20 },
+        { id: 'rasmalai', name: 'रसमलाई', price: 40 },
+        { id: 'dahivadi', name: 'दहिवाटी', price: 25 },
+        { id: 'shrikhand', name: 'श्रीखंड', price: 30 }
+      ]
+    },
+    {
+      id: 'namkin', label: 'नमकीन', icon: '🥟',
+      items: [
+        { id: 'dahivada', name: 'दहिवडा', price: 40 },
+        { id: 'dahibundi', name: 'दहिबुंदी', price: 40 }
+      ]
+    },
+    {
+      id: 'rayta', label: 'रायता', icon: '🥣',
+      items: [
+        { id: 'veg_rayta', name: 'वेज रायता', price: 30 },
+        { id: 'bundi_rayta', name: 'बुंदी रायता', price: 30 }
+      ]
+    },
+    {
+      id: 'chaynij', label: 'चायनिज', icon: '🍜',
+      items: [
+        { id: 'noodles', name: 'नूडल्स', price: 80 },
+        { id: 'hakka_noodles', name: 'हक्का नूडल्स', price: 75 },
+        { id: 'shezwan_noodles', name: 'शेजवान नूडल्स', price: 90 },
+        { id: 'noodles_manchurian', name: 'नूडल्स + मन्चुरीयन', price: 95 },
+        { id: 'singapuri_noodles', name: 'सिंगापुरी नूडल्स', price: 90 },
+        { id: 'shev_noodles_manchurian', name: 'शे. नूडल्स मन्चुरीयन', price: 100 },
+        { id: 'chilli_garlic_noodles', name: 'चिली गार्लिक नूडल्स', price: 90 },
+        { id: 'manchurian_gravy', name: 'मन्चुरीयन ग्रेवी', price: 80 },
+        { id: 'manchurian_dry', name: 'मन्चुरीयन ड्राय', price: 90 },
+        { id: 'fried_rice', name: 'फ्राईड राईस', price: 80 },
+        { id: 'shezwan_fried_rice', name: 'शेजवान फ्राईड राईस', price: 90 },
+        { id: 'manchurian_rice', name: 'मन्चुरीयन राईस', price: 95 },
+        { id: 'shezwan_manchurian_rice', name: 'शेजवान मन्चुरीयन राईस', price: 105 },
+        { id: 'triple_rice', name: 'ट्रिपल राईस', price: 100 },
+        { id: 'triple_rice_gravy', name: 'ट्रिपल राईस ग्रेवी', price: 105 },
+        { id: 'singapuri_fried_rice', name: 'सिंगापुरी फ्राईड राईस', price: 85 },
+        { id: 'chaynij_bhel', name: 'चायनिज भेल', price: 100 },
+        { id: 'bambay_bhel', name: 'बॉम्बे भेल', price: 100 },
+        { id: 'panir_fried_rice', name: 'पनिर फ्राईड राईस', price: 115 },
+        { id: 'chilli_garlic_rice', name: 'चिली गार्लिक राईस', price: 95 },
+        { id: 'chilli_garlic_m_rice', name: 'चिली गार्लिक म. राईस', price: 100 },
+        { id: 'panir_manchurian_gravy', name: 'पनिर मन्चुरीयन ग्रेव्ही', price: 140 },
+        { id: 'panir_manchurian_dry', name: 'पनिर मन्चुरीयन ड्राय', price: 145 },
+        { id: 'gobhi_manchurian', name: 'गोबी मन्चुरीयन', price: 110 },
+        { id: 'panir_chilli_gravy', name: 'पनिर चिली ग्रेव्ही', price: 145 },
+        { id: 'half_noodles', name: 'हाफ नूडल्स', price: 50 },
+        { id: 'half_hakka_noodles', name: 'हाफ हक्का नूडल्स', price: 50 },
+        { id: 'half_shezwan_noodles', name: 'हाफ शेजवान नूडल्स', price: 55 },
+        { id: 'half_noodles_manchurian', name: 'हाफ नूडल्स + मन्चुरीयन', price: 60 },
+        { id: 'half_singapuri_noodles', name: 'हाफ सिंगापुरी नूडल्स', price: 55 },
+        { id: 'half_shev_noodles_manchurian', name: 'हाफ शे. नूडल्स मन्चुरीयन', price: 60 },
+        { id: 'half_chilli_garlic_noodles', name: 'हाफ चिली गार्लिक नूडल्स', price: 55 },
+        { id: 'half_manchurian_gravy', name: 'हाफ मन्चुरीयन ग्रेवी', price: 50 },
+        { id: 'half_manchurian_dry', name: 'हाफ मन्चुरीयन ड्राय', price: 50 },
+        { id: 'half_fried_rice', name: 'हाफ फ्राईड राईस', price: 50 },
+        { id: 'half_shezwan_fried_rice', name: 'हाफ शेजवान फ्राईड राईस', price: 55 },
+        { id: 'half_manchurian_rice', name: 'हाफ मन्चुरीयन राईस', price: 55 },
+        { id: 'half_shezwan_manchurian_rice', name: 'हाफ शेजवान मन्चुरीयन राईस', price: 65 },
+        { id: 'half_triple_rice', name: 'हाफ ट्रिपल राईस', price: 60 },
+        { id: 'half_triple_rice_gravy', name: 'हाफ ट्रिपल राईस ग्रेवी', price: 65 },
+        { id: 'half_singapuri_fried_rice', name: 'हाफ सिंगापुरी फ्राईड राईस', price: 50 },
+        { id: 'half_chaynij_bhel', name: 'हाफ चायनिज भेल', price: 60 },
+        { id: 'half_bambay_bhel', name: 'हाफ बॉम्बे भेल', price: 60 },
+        { id: 'half_panir_fried_rice', name: 'हाफ पनिर फ्राईड राईस', price: 75 },
+        { id: 'half_chilli_garlic_rice', name: 'हाफ चिली गार्लिक राईस', price: 50 },
+        { id: 'half_chilli_garlic_m_rice', name: 'हाफ चिली गार्लिक म. राईस', price: 60 },
+        { id: 'half_panir_manchurian_gravy', name: 'हाफ पनिर मन्चुरीयन ग्रेव्ही', price: 140 },
+        { id: 'half_panir_manchurian_dry', name: 'हाफ पनिर मन्चुरीयन ड्राय', price: 145 },
+        { id: 'half_gobhi_manchurian', name: 'हाफ गोबी मन्चुरीयन', price: 110 },
+        { id: 'half_panir_chilli_gravy', name: 'हाफ पनिर चिली ग्रेव्ही', price: 145 }
+      ]
+    },
+    {
+      id: 'south_indian', label: 'साउथ इंडियन', icon: '🫔',
+      items: [
+        { id: 'masala_dosa', name: 'मसाला दोसा', price: 55 },
+        { id: 'kataphis_dosa', name: 'कटफिस दोसा', price: 60 },
+        { id: 'paper_sadha_dosa', name: 'पेपर साधा दोसा', price: 90 },
+        { id: 'paper_masala_dosa', name: 'पेपर मसाला दोसा', price: 100 },
+        { id: 'paper_butter_masala_dosa', name: 'पेपर बटर मसाला दोसा', price: 120 },
+        { id: 'paper_butter_sadha_dosa', name: 'पेपर बटर साधा दोसा', price: 110 },
+        { id: 'plain_butter_dosa', name: 'प्लेन बटर दोसा', price: 60 },
+        { id: 'butter_masala_dosa', name: 'बटर मसाला दोसा', price: 65 },
+        { id: 'butter_kataphis_dosa', name: 'बटर कटफिस दोसा', price: 70 },
+        { id: 'mysur_masala_dosa', name: 'मैसूर मसाला दोसा', price: 80 },
+        { id: 'panir_mysur_dosa', name: 'पनिर मैसूर दोसा', price: 115 },
+        { id: 'chij_mysur_dosa', name: 'चिज मैसूर दोसा', price: 125 },
+        { id: 'panir_chij_mysur_dosa', name: 'पनिर चिज मैसूर दोसा', price: 130 },
+        { id: 'hydrabadi_dosa', name: 'हैद्राबादी दोसा', price: 95 },
+        { id: 'hydrabadi_special_chij_dosa', name: 'हैद्राबादी स्पेशल चिज दोसा', price: 105 },
+        { id: 'spring_roll', name: 'स्प्रींग रोल', price: 80 },
+        { id: 'panir_spring_roll', name: 'पनिर स्प्रींग रोल', price: 115 },
+        { id: 'chaynij_dosa', name: 'चायनिज दोसा', price: 85 },
+        { id: 'panir_dosa_plain', name: 'पनिर दोसा प्लेन', price: 100 },
+        { id: 'panir_masala_dosa', name: 'पनिर मसाला दोसा', price: 105 },
+        { id: 'chij_dosa_plain', name: 'चिज दोसा प्लेन', price: 80 },
+        { id: 'chij_masala_dosa', name: 'चिज मसाला दोसा', price: 90 },
+        { id: 'onion_masala_dosa', name: 'ऑनियन मसाला दोसा', price: 80 },
+        { id: 'tomato_masala_dosa', name: 'टोमॅटो मसाला दोसा', price: 80 },
+        { id: 'tomato_onion_masala_dosa', name: 'टोमॅटो ऑनियन मसाला दोसा', price: 85 },
+        { id: 'gayatri_special_dosa', name: 'गायत्री स्पेशल दोसा', price: 125 }
+      ]
+    },
+    {
+      id: 'south_indian_uttapam', label: 'साउथ इंडियन उत्तपम', icon: '🥞',
+      items: [
+        { id: 'onion_uttapam', name: 'ऑनियन उत्तपम', price: 80 },
+        { id: 'chij_onion_uttapam', name: 'चिज ऑनियन उत्तपम', price: 95 },
+        { id: 'panir_onion_uttapam', name: 'पनिर ऑनियन उत्तपम', price: 95 },
+        { id: 'panir_chij_onion_uttapam', name: 'पनिर चिज ऑनियन उत्तपम', price: 105 },
+        { id: 'tomato_uttapam', name: 'टोमॅटो उत्तपम', price: 80 },
+        { id: 'chij_tomato_uttapam', name: 'चिज टोमॅटो उत्तपम', price: 95 },
+        { id: 'panir_tomato_uttapam', name: 'पनिर टोमॅटो उत्तपम', price: 95 },
+        { id: 'panir_chij_tomato_uttapam', name: 'पनिर चिज टोमॅटो उत्तपम', price: 105 },
+        { id: 'masala_uttapam', name: 'मसाला उत्तपम', price: 80 },
+        { id: 'chij_masala_uttapam', name: 'चिज मसाला उत्तपम', price: 95 },
+        { id: 'panir_masala_uttapam', name: 'पनिर मसाला उत्तपम', price: 95 },
+        { id: 'panir_chij_masala_uttapam', name: 'पनिर चिज मसाला उत्तपम', price: 110 },
+        { id: 'tomato_onion_uttapam', name: 'टोमॅटो ऑनियन उत्तपम', price: 90 },
+        { id: 'chij_tomato_onion_uttapam', name: 'चिज टोमॅटो ऑनियन उत्तपम', price: 105 },
+        { id: 'panir_tomato_onion_uttapam', name: 'पनिर टोमॅटो ऑनियन उत्तपम', price: 105 },
+        { id: 'chij_panir_tomato_onion_uttapam', name: 'चिज पनिर टोमॅटो ऑनियन उत्तपम', price: 115 },
+        { id: 'uttapam_mix_masala', name: 'उत्तपम मिक्स मसाला', price: 95 },
+        { id: 'chij_mix_uttapam_masala', name: 'चिज मिक्स उत्तपम मसाला', price: 115 },
+        { id: 'panir_mix_uttapam_masala', name: 'पनिर मिक्स उत्तपम मसाला', price: 115 },
+        { id: 'chij_panir_mix_uttapam_masala', name: 'चिज पनिर मिक्स उत्तपम मसाला', price: 120 },
+        { id: 'panir_uttapam', name: 'पनिर उत्तपम', price: 115 },
+        { id: 'panir_chij_uttapam', name: 'पनिर चिज उत्तपम', price: 125 }
+      ]
+    },
+    {
+      id: 'special_pav_bhaji', label: 'स्पेशल पावभाजी', icon: '🥖',
+      items: [
+        { id: 'pav_bhaji', name: 'पाव भाजी', price: 60 },
+        { id: 'butter_pav_bhaji', name: 'बटर पावभाजी', price: 70 },
+        { id: 'extra_pav', name: 'एक्स्ट्रा पाव', price: 20 },
+        { id: 'extra_butter_pav', name: 'एक्स्ट्रा बटर पाव', price: 25 },
+        { id: 'extra_bhaji', name: 'एक्स्ट्रा भाजी', price: 30 }
+      ]
+    },
+    {
+      id: 'cake', label: 'केक', icon: '🧈',
+      items: [
+        { id: 'candle10', name: 'मेणबत्ती', price: 10 },
+        { id: 'pastry', name: 'पेस्ट्री', price: 40 },
+        { id: 'cake150', name: 'केक', price: 150 },
+        { id: 'cake200', name: 'केक', price: 200 },
+        { id: 'cake250', name: 'केक', price: 250 },
+        { id: 'cake300', name: 'केक', price: 300 },
+        { id: 'cake350', name: 'केक', price: 350 },
+        { id: 'cake400', name: 'केक', price: 400 },
+        { id: 'cake450', name: 'केक', price: 450 },
+        { id: 'cake500', name: 'केक', price: 500 },
+        { id: 'cake550', name: 'केक', price: 550 },
+        { id: 'cake600', name: 'केक', price: 600 }
+      ]
+    }
+  ];
+
+  // The very first version used a tiny 2-item fallback menu. If that copy is found (on the phone or in the cloud) it is replaced by the full menu.
+  function isLegacyTwoItemMenu(cats) {
+    return Array.isArray(cats) && cats.length === 1 && cats[0] && cats[0].id === 'tandoor_chapati'
+      && Array.isArray(cats[0].items) && cats[0].items.length <= 2;
+  }
+
+  // ─── AUTHENTICATION ───
+  const LS_SALES = 'mghr_owner_sales';
+  const LS_AUDIT = 'mghr_owner_audit';
+  const LS_MENU = 'mghr_menu_data';
+
+  let currentPeriod = 'today';
+  let salesData = [];
+  let auditLogs = [];
+  let menuCategories = [];
+
+  let fbDb = null, fbAuth = null, appStarted = false, authWatched = false, cloudListening = false;
+
+  function cloudConfigured() {
+    return !!FIREBASE_CONFIG.apiKey && !String(FIREBASE_CONFIG.apiKey).startsWith('PASTE');
+  }
+  function initFirebase() {
+    if (fbAuth) return null;
+    if (!window.firebase) return 'Firebase could not load — check your internet connection.';
+    if (!cloudConfigured()) return 'Firebase is not set up yet — paste your firebaseConfig at the top of manage.html.';
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      fbDb = firebase.firestore();
+      fbDb.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+      fbAuth = firebase.auth();
+      return null;
+    } catch (e) { return 'Firebase error: ' + e.message; }
+  }
+  function showLoginError(msg) {
+    const el = document.getElementById('loginError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function watchAuth() {
+    if (authWatched || !fbAuth) return;
+    authWatched = true;
+    fbAuth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        if (!appStarted) { appStarted = true; initApp(); }
+      } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+      }
+    });
+  }
+
+  function checkAuth() {
+    document.getElementById('loginScreen').style.display = 'flex';
+    const err = initFirebase();
+    if (err) { showLoginError(err); return; }
+    watchAuth();
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    const err = initFirebase();
+    if (err) { showLoginError(err); return; }
+    watchAuth();
+    document.getElementById('loginError').style.display = 'none';
+    fbAuth.signInWithEmailAndPassword(email, pass)
+      .then(() => showToast('✅ Logged in successfully'))
+      .catch(er => showLoginError(er.code === 'auth/network-request-failed' ? 'No internet connection' : 'Wrong email or password!'));
+  }
+
+  function handleLogout() {
+    if (confirm('Logout from MGHR Manager?')) {
+      const done = () => location.reload();
+      if (fbAuth) fbAuth.signOut().then(done, done); else done();
+    }
+  }
+
+  // ─── TAB SWITCHING ───
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (tabId === 'tabDashboard') updateDashboardMetrics();
+    if (tabId === 'tabSales') renderSalesLogList();
+    if (tabId === 'tabMenu') renderMenuEditor();
+    if (tabId === 'tabSettings') updateSettingsCounts();
+  }
+
+  // ─── TOAST ───
+  function showToast(msg, duration = 3000) {
+    const t = document.getElementById('manageToast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, duration);
+  }
+
+  // ─── DATA PERSISTENCE & CACHING ───
+  function loadLocalData() {
+    try {
+      salesData = JSON.parse(localStorage.getItem(LS_SALES)) || [];
+      auditLogs = JSON.parse(localStorage.getItem(LS_AUDIT)) || [];
+      menuCategories = JSON.parse(localStorage.getItem(LS_MENU)) || [];
+      if (!menuCategories.length || isLegacyTwoItemMenu(menuCategories)) {
+        menuCategories = JSON.parse(JSON.stringify(DEFAULT_MENU));
+        localStorage.setItem(LS_MENU, JSON.stringify(menuCategories));
+      }
+      // Also check POS local storage if running on same domain/origin
+      const posLog = JSON.parse(localStorage.getItem('mgpos_saleslog')) || [];
+      if (posLog.length > 0) {
+        mergeIncomingSales(posLog);
+      }
+    } catch(e) {
+      console.warn('Load local data error:', e);
+    }
+  }
+
+  function saveLocalData() {
+    try {
+      localStorage.setItem(LS_SALES, JSON.stringify(salesData));
+      localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
+      localStorage.setItem(LS_MENU, JSON.stringify(menuCategories));
+    } catch(e) {
+      console.warn('Save local data error:', e);
+      // phone storage full → keep the newest 80% of bills on the phone (all bills stay safe in the cloud)
+      try {
+        if (salesData.length > 200) {
+          salesData.sort((x, y) => parseBillDate(y) - parseBillDate(x));
+          salesData.length = Math.floor(salesData.length * 0.8);
+          localStorage.setItem(LS_SALES, JSON.stringify(salesData));
+          localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
+          localStorage.setItem(LS_MENU, JSON.stringify(menuCategories));
+        }
+      } catch(e2) {}
+    }
+  }
+
+  function mergeIncomingSales(incomingList) {
+    let newCount = 0;
+    incomingList.forEach(item => {
+      const idx = salesData.findIndex(s => s.billNo === item.billNo);
+      if (idx === -1) {
+        salesData.push(item);
+        newCount++;
+      } else {
+        // If edited, update
+        if (item.edited) salesData[idx] = item;
+      }
+    });
+    if (newCount > 0) saveLocalData();
+  }
+
+  // ─── PERIOD FILTERING ───
+  function setPeriod(p) {
+    currentPeriod = p;
+    document.querySelectorAll('.duration-pills .pill-btn').forEach(b => b.classList.remove('active'));
+    if (event && event.target) event.target.classList.add('active');
+    document.getElementById('customRangeBox').classList.remove('show');
+    updateDashboardMetrics();
+  }
+
+  function toggleCustomRange() {
+    const box = document.getElementById('customRangeBox');
+    box.classList.toggle('show');
+  }
+
+  function applyCustomRange() {
+    const start = document.getElementById('rangeStart').value;
+    const end = document.getElementById('rangeEnd').value;
+    if (!start || !end) { alert('Please select both start and end dates'); return; }
+    currentPeriod = 'custom';
+    updateDashboardMetrics();
+  }
+
+  function filterBillsByPeriod(period) {
+    const now = new Date();
+    const todayStr = getLocalDateKey(now);
+    const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = getLocalDateKey(yesterday);
+
+    return salesData.filter(bill => {
+      const bDate = parseBillDate(bill);
+      if (!bDate) return false;
+      const bDateStr = getLocalDateKey(bDate);
+
+      if (period === 'today') return bDateStr === todayStr;
+      if (period === 'yesterday') return bDateStr === yesterdayStr;
+      if (period === 'week') {
+        const diffDays = (now - bDate) / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 7;
+      }
+      if (period === 'month') {
+        return bDate.getMonth() === now.getMonth() && bDate.getFullYear() === now.getFullYear();
+      }
+      if (period === 'year') {
+        return bDate.getFullYear() === now.getFullYear();
+      }
+      if (period === 'custom') {
+        const s = new Date(document.getElementById('rangeStart').value);
+        const e = new Date(document.getElementById('rangeEnd').value);
+        e.setHours(23, 59, 59);
+        return bDate >= s && bDate <= e;
+      }
+      return true;
+    });
+  }
+
+  function parseBillDate(bill) {
+    if (bill.date) {
+      const d = new Date(bill.date);
+      if (!isNaN(d.getTime())) return d;
+    }
+    if (bill.timestamp) return new Date(bill.timestamp);
+    return new Date();
+  }
+
+  function getLocalDateKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  // ─── DASHBOARD COMPUTATION ───
+  function updateDashboardMetrics() {
+    const filtered = filterBillsByPeriod(currentPeriod);
+    const headingEl = document.getElementById('periodHeading');
+    const rangeEl = document.getElementById('periodDateRange');
+
+    const names = {
+      today: "TODAY'S SUMMARY",
+      yesterday: "YESTERDAY'S SUMMARY",
+      week: "THIS WEEK'S SUMMARY",
+      month: "THIS MONTH'S SUMMARY",
+      year: "THIS YEAR'S SUMMARY",
+      custom: "CUSTOM RANGE SUMMARY"
+    };
+    headingEl.textContent = names[currentPeriod] || 'SUMMARY';
+    rangeEl.textContent = `${filtered.length} bill(s)`;
+
+    let totalRev = 0, parcelRev = 0, dineRev = 0, gstTotal = 0, discTotal = 0;
+    let parcelCount = 0, dineCount = 0;
+
+    filtered.forEach(b => {
+      const amt = Number(b.total) || 0;
+      totalRev += amt;
+      gstTotal += Number(b.gstAmt) || 0;
+      discTotal += Number(b.discount) || 0;
+
+      if (b.tableId === 'takeaway' || (b.label && b.label.includes('पार्सल'))) {
+        parcelRev += amt;
+        parcelCount++;
+      } else {
+        dineRev += amt;
+        dineCount++;
+      }
+    });
+
+    const avgVal = filtered.length > 0 ? (totalRev / filtered.length) : 0;
+
+    document.getElementById('valRevenue').textContent = '₹' + totalRev.toFixed(2);
+    document.getElementById('subRevenue').textContent = `${filtered.length} Bills Total`;
+    document.getElementById('valParcel').textContent = '₹' + parcelRev.toFixed(2);
+    document.getElementById('subParcel').textContent = `${parcelCount} Orders`;
+    document.getElementById('valDineIn').textContent = '₹' + dineRev.toFixed(2);
+    document.getElementById('subDineIn').textContent = `${dineCount} Tables`;
+    document.getElementById('valGst').textContent = '₹' + gstTotal.toFixed(2);
+    document.getElementById('valDiscount').textContent = '₹' + discTotal.toFixed(2);
+    document.getElementById('valAvg').textContent = '₹' + avgVal.toFixed(0);
+
+    // Comparators
+    const yestBills = filterBillsByPeriod('yesterday');
+    const yestTotal = yestBills.reduce((s, b) => s + (Number(b.total)||0), 0);
+    document.getElementById('compYesterday').textContent = '₹' + yestTotal.toFixed(0);
+    document.getElementById('compYesterdayCount').textContent = `${yestBills.length} bills`;
+
+    const weekBills = filterBillsByPeriod('week');
+    const weekTotal = weekBills.reduce((s, b) => s + (Number(b.total)||0), 0);
+    document.getElementById('compWeek').textContent = '₹' + weekTotal.toFixed(0);
+    document.getElementById('compWeekCount').textContent = `${weekBills.length} bills`;
+
+    const monthBills = filterBillsByPeriod('month');
+    const monthTotal = monthBills.reduce((s, b) => s + (Number(b.total)||0), 0);
+    document.getElementById('compMonth').textContent = '₹' + monthTotal.toFixed(0);
+    document.getElementById('compMonthCount').textContent = `${monthBills.length} bills`;
+
+    const yearBills = filterBillsByPeriod('year');
+    const yearTotal = yearBills.reduce((s, b) => s + (Number(b.total)||0), 0);
+    document.getElementById('compYear').textContent = '₹' + yearTotal.toFixed(0);
+
+    const lifetimeTotal = salesData.reduce((s, b) => s + (Number(b.total)||0), 0);
+    document.getElementById('compAllTime').textContent = '₹' + lifetimeTotal.toFixed(0);
+    document.getElementById('compAllTimeCount').textContent = `${salesData.length} lifetime bills`;
+
+    document.getElementById('compAuditCount').textContent = auditLogs.length;
+  }
+
+  // ─── SALES & AUDIT LOG TAB ───
+  function renderSalesLogList() {
+    const list = document.getElementById('salesLogList');
+    const query = (document.getElementById('salesSearch').value || '').trim().toLowerCase();
+
+    let combined = [
+      ...salesData.map(s => ({ ...s, logKind: 'BILL' })),
+      ...auditLogs.map(a => ({ ...a, logKind: 'AUDIT' }))
+    ];
+
+    // Sort newest first
+    combined.sort((a, b) => {
+      const tA = parseBillDate(a).getTime();
+      const tB = parseBillDate(b).getTime();
+      return tB - tA;
+    });
+
+    if (query) {
+      combined = combined.filter(it => {
+        const text = `${it.billNo || ''} ${it.label || ''} ${(it.items || []).join(' ')} ${it.action || ''}`.toLowerCase();
+        return text.includes(query);
+      });
+    }
+
+    if (!combined.length) {
+      list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:30px;">No sales records found</div>';
+      return;
+    }
+
+    list.innerHTML = combined.map(item => {
+      if (item.logKind === 'AUDIT') {
+        const isReprint = item.action === 'REPRINT';
+        const tagClass = isReprint ? 'tag-reprint' : 'tag-edit';
+        return `
+          <div class="sale-card" style="border-left: 3px solid ${isReprint ? 'var(--blue)' : 'var(--red)'};">
+            <div class="sale-top">
+              <span class="sale-bill">${item.billNo || 'AUDIT EVENT'}</span>
+              <span style="font-size:12px;color:${isReprint ? 'var(--blue)' : 'var(--red)'};font-weight:700;">
+                ${item.delta ? (item.delta > 0 ? '+₹' + item.delta : '-₹' + Math.abs(item.delta)) : 'INFO ONLY'}
+              </span>
+            </div>
+            <div class="sale-meta">
+              <span class="tag ${tagClass}">${item.action}</span>
+              <span class="tag tag-time">${item.date || ''} ${item.time || ''}</span>
+              <span style="color:var(--text3);">${item.details || ''}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Standard Bill
+      const isParcel = item.tableId === 'takeaway' || (item.label && item.label.includes('पार्सल'));
+      const editTag = item.edited ? '<span class="tag tag-edit">EDITED</span>' : '';
+      return `
+        <div class="sale-card">
+          <div class="sale-top">
+            <span class="sale-bill">${item.billNo}</span>
+            <span class="sale-total">₹${Number(item.total).toFixed(2)}</span>
+          </div>
+          <div class="sale-meta">
+            <span class="tag ${isParcel ? 'tag-takeaway' : 'tag-table'}">${(item.label || '').replace(/[📦🪑]/g,'').trim()}</span>
+            <span class="tag tag-time">${item.date || ''} ${item.time || ''}</span>
+            ${item.gstEnabled ? '<span class="tag" style="background:#262626;color:#ccc;">+GST 5%</span>' : ''}
+            ${item.discount > 0 ? `<span class="tag" style="background:#262626;color:var(--amber);">Disc ₹${item.discount}</span>` : ''}
+            ${editTag}
+          </div>
+          <div class="sale-items">${(item.items || []).join(', ')}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function exportFilteredSalesCSV() {
+    if (!salesData.length) { alert('No sales to export'); return; }
+    const rows = [['Bill No','Table','Date','Time','Subtotal','GST','Discount','Total','Items','Status']];
+    salesData.forEach(b => {
+      rows.push([
+        b.billNo, (b.label||'').replace(/[📦🪑]/g,'').trim(), b.date||'', b.time||'',
+        (b.subtotal||0).toFixed(2), (b.gstAmt||0).toFixed(2), (b.discount||0).toFixed(2),
+        (b.total||0).toFixed(2), (b.items||[]).join(' | '), b.edited ? 'Edited' : 'Original'
+      ]);
+    });
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mghr_sales_export_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  // ─── MENU EDITOR ───
+  function renderMenuEditor() {
+    const container = document.getElementById('menuCategoriesContainer');
+    if (!menuCategories.length) {
+      menuCategories = JSON.parse(JSON.stringify(DEFAULT_MENU));
+      saveLocalData();
+    }
+
+    container.innerHTML = menuCategories.map((cat, cIdx) => `
+      <div class="menu-cat-card">
+        <div class="menu-cat-header">
+          <span class="menu-cat-title">${cat.icon || '🍲'} ${cat.label}</span>
+          <button class="header-btn" style="color:var(--red);border-color:#442222;" onclick="deleteCategory(${cIdx})">Delete Category</button>
+        </div>
+        <div>
+          ${(cat.items || []).map((it, iIdx) => `
+            <div class="menu-item-row">
+              <div class="item-inputs">
+                <input type="text" class="item-name-input" value="${it.name}" onchange="updateMenuItem(${cIdx}, ${iIdx}, 'name', this.value)">
+                <span style="color:var(--amber);">₹</span>
+                <input type="number" class="item-price-input" value="${it.price}" onchange="updateMenuItem(${cIdx}, ${iIdx}, 'price', this.value)">
+              </div>
+              <button class="item-btn" onclick="deleteMenuItem(${cIdx}, ${iIdx})">✕</button>
+            </div>
+          `).join('')}
+        </div>
+        <button class="add-dish-btn" onclick="promptAddDish(${cIdx})">+ Add Dish in ${cat.label}</button>
+      </div>
+    `).join('');
+  }
+
+  function updateMenuItem(cIdx, iIdx, field, val) {
+    if (field === 'price') menuCategories[cIdx].items[iIdx].price = Number(val) || 0;
+    else menuCategories[cIdx].items[iIdx].name = val.trim();
+    saveLocalData();
+    broadcastMenuUpdate();
+    showToast('💾 Item updated');
+  }
+
+  function deleteMenuItem(cIdx, iIdx) {
+    if (confirm('Delete this item?')) {
+      menuCategories[cIdx].items.splice(iIdx, 1);
+      saveLocalData();
+      renderMenuEditor();
+      broadcastMenuUpdate();
+      showToast('🗑 Item deleted');
+    }
+  }
+
+  function promptAddDish(cIdx) {
+    const name = prompt('Enter dish name:');
+    if (!name || !name.trim()) return;
+    const price = Number(prompt('Enter price (₹):', '50')) || 0;
+    menuCategories[cIdx].items.push({
+      id: 'custom_' + Date.now(),
+      name: name.trim(),
+      price: price
+    });
+    saveLocalData();
+    renderMenuEditor();
+    broadcastMenuUpdate();
+    showToast('✅ Dish added');
+  }
+
+  function promptAddCategory() {
+    const label = prompt('Enter new category name:');
+    if (!label || !label.trim()) return;
+    const icon = prompt('Enter icon/emoji (e.g. 🍛, 🍲):', '🍛') || '🍛';
+    menuCategories.push({
+      id: 'cat_' + Date.now(),
+      label: label.trim(),
+      icon: icon.trim(),
+      items: []
+    });
+    saveLocalData();
+    renderMenuEditor();
+    broadcastMenuUpdate();
+    showToast('✅ Category added');
+  }
+
+  function deleteCategory(cIdx) {
+    if (confirm(`Delete entire category "${menuCategories[cIdx].label}"?`)) {
+      menuCategories.splice(cIdx, 1);
+      saveLocalData();
+      renderMenuEditor();
+      broadcastMenuUpdate();
+      showToast('🗑 Category deleted');
+    }
+  }
+
+  // ─── MENU → CLOUD → POS ───
+  const LS_MENU_VER = 'mghr_menu_version';
+  let menuVersionLocal = Number(localStorage.getItem(LS_MENU_VER) || 0);
+  let menuAckTimer = null, menuLastVersion = 0, menuCloudChecked = false;
+
+  function restoreFullMenu() {
+    if (!confirm('Replace the menu on this phone (and the POS) with the full standard menu?\nYour current menu edits will be lost.')) return;
+    menuCategories = JSON.parse(JSON.stringify(DEFAULT_MENU));
+    saveLocalData();
+    renderMenuEditor();
+    updateSettingsCounts();
+    broadcastMenuUpdate();
+    showToast('↩ Full menu restored (' + menuCategories.reduce((n, c) => n + c.items.length, 0) + ' dishes)');
+  }
+
+  function setMenuStatus(text, color) {
+    const el = document.getElementById('menuSyncStatus');
+    if (el) { el.textContent = text; el.style.color = color || 'var(--text3)'; }
+  }
+
+  function broadcastMenuUpdate() {
+    try { localStorage.setItem(LS_MENU, JSON.stringify(menuCategories)); } catch(e) {}
+    if (!fbDb || !fbAuth || !fbAuth.currentUser) {
+      setMenuStatus('⚠️ Not connected to cloud — menu saved only on this phone.', 'var(--amber)');
+      return;
+    }
+    if (!menuCloudChecked) {
+      setMenuStatus('⏳ Still loading the saved menu from cloud — tap "Send menu to POS" again in a moment.', 'var(--amber)');
+      return;
+    }
+    const version = Date.now();
+    menuLastVersion = version;
+    setMenuStatus('📡 Saving menu to cloud…', 'var(--blue)');
+    fbDb.doc('config/menu').set({ version, categories: JSON.parse(JSON.stringify(menuCategories)) })
+      .then(() => {
+        menuVersionLocal = version;
+        try { localStorage.setItem(LS_MENU_VER, String(version)); } catch(e) {}
+        if (menuLastVersion !== version) return;
+        setMenuStatus('📡 Menu saved — waiting for POS to confirm…', 'var(--blue)');
+        clearTimeout(menuAckTimer);
+        menuAckTimer = setTimeout(() => {
+          if (menuLastVersion === version)
+            setMenuStatus('⚠️ POS has not confirmed yet. It updates by itself the next time the POS is open and online.', 'var(--amber)');
+        }, 10000);
+      })
+      .catch(err => setMenuStatus('❌ Could not save menu to cloud: ' + (err.code || err.message), 'var(--red)'));
+  }
+
+  function handleMenuAck(ack) {
+    if (!ack || Number(ack.version) !== menuLastVersion) return;
+    clearTimeout(menuAckTimer);
+    setMenuStatus(`✅ POS menu updated (${ack.dishes} dishes)`, 'var(--green)');
+  }
+
+  // ─── CLOUD LISTENERS (bills, audit, menu, sync progress) ───
+  const LS_CLOUD_TS = 'mghr_cloud_ts';
+  const LS_CLOUD_AUDIT_TS = 'mghr_cloud_audit_ts';
+
+  function cloudListenerError(what) {
+    return err => {
+      console.warn('cloud ' + what, err);
+      showToast(err && err.code === 'permission-denied'
+        ? '🔒 Cloud rules blocked this login — check the UID in your Firestore rules'
+        : '⚠️ Cloud problem (' + what + ')', 5000);
+    };
+  }
+
+  function compactBill(b) {          // the phone doesn't need the POS's edit snapshot; saves storage
+    const c = Object.assign({}, b);
+    delete c.snapshot; delete c.snapDiscount;
+    return c;
+  }
+  function mergeCloudBill(bill) {
+    const idx = salesData.findIndex(s => s.billNo === bill.billNo);
+    if (idx === -1) salesData.unshift(bill); else salesData[idx] = bill;
+  }
+
+  function startCloudListeners() {
+    if (!fbDb || cloudListening) return;
+    cloudListening = true;
+
+    // Bills: only what changed since the last time this phone looked (keeps reads tiny)
+    let billsReady = false;
+    const since = Math.max(0, Number(localStorage.getItem(LS_CLOUD_TS) || 0) - 120000);
+    fbDb.collection('bills').where('updatedAt', '>', since).orderBy('updatedAt').onSnapshot(snap => {
+      let maxTs = Number(localStorage.getItem(LS_CLOUD_TS) || 0);
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'removed') return;
+        const raw = ch.doc.data();
+        const bill = compactBill(Object.assign({}, raw, { billNo: raw.billNo || ch.doc.id }));
+        const isNew = !salesData.some(s => s.billNo === bill.billNo);
+        mergeCloudBill(bill);
+        maxTs = Math.max(maxTs, Number(raw.updatedAt) || 0);
+        if (billsReady && !snap.metadata.fromCache)
+          showToast(isNew ? `🔔 New Bill: ${bill.billNo} - ₹${bill.total}` : `✎ Bill Updated: ${bill.billNo}`);
+      });
+      if (!snap.metadata.fromCache) billsReady = true;
+      try { localStorage.setItem(LS_CLOUD_TS, String(maxTs)); } catch(e) {}
+      saveLocalData();
+      updateDashboardMetrics();
+      renderSalesLogList();
+    }, cloudListenerError('sales'));
+
+    // Audit events (edits / reprints)
+    const auditSince = Math.max(0, Number(localStorage.getItem(LS_CLOUD_AUDIT_TS) || 0) - 120000);
+    fbDb.collection('audit').where('updatedAt', '>', auditSince).orderBy('updatedAt').onSnapshot(snap => {
+      let maxTs = Number(localStorage.getItem(LS_CLOUD_AUDIT_TS) || 0);
+      snap.docChanges().forEach(ch => {
+        if (ch.type !== 'added') return;
+        const a = Object.assign({}, ch.doc.data(), { _id: ch.doc.id });
+        if (!auditLogs.some(x => x._id === a._id)) auditLogs.unshift(a);
+        maxTs = Math.max(maxTs, Number(a.updatedAt) || 0);
+      });
+      try { localStorage.setItem(LS_CLOUD_AUDIT_TS, String(maxTs)); } catch(e) {}
+      saveLocalData();
+      updateDashboardMetrics();
+      renderSalesLogList();
+    }, cloudListenerError('audit'));
+
+    // Menu: load the saved cloud menu first, so this phone never overwrites it with an old copy
+    fbDb.doc('config/menu').onSnapshot(snap => {
+      if (!snap.metadata.fromCache || snap.exists) menuCloudChecked = true;
+      if (!snap.exists || snap.metadata.hasPendingWrites) return;
+      const d = snap.data();
+      if (Number(d.version) > menuVersionLocal && Array.isArray(d.categories)) {
+        menuCategories = d.categories;
+        menuVersionLocal = Number(d.version);
+        try { localStorage.setItem(LS_MENU_VER, String(menuVersionLocal)); } catch(e) {}
+        if (isLegacyTwoItemMenu(menuCategories)) {            // old 2-item copy in the cloud → put the full menu back
+          menuCategories = JSON.parse(JSON.stringify(DEFAULT_MENU));
+          saveLocalData(); renderMenuEditor(); updateSettingsCounts();
+          broadcastMenuUpdate();
+          return;
+        }
+        saveLocalData();
+        renderMenuEditor();
+        updateSettingsCounts();
+      }
+    }, cloudListenerError('menu'));
+    fbDb.doc('config/menuAck').onSnapshot(snap => { if (snap.exists) handleMenuAck(snap.data()); }, () => {});
+
+    // Sync progress reported by the POS
+    fbDb.doc('sync/state').onSnapshot(snap => { if (snap.exists) handleSyncState(snap.data()); }, cloudListenerError('sync'));
+  }
+
+  // ─── SYNC WITH POS ───
+  // Phone asks → POS compares today's sales log with the cloud and sends what's missing (10 bills per batch)
+  // → phone re-reads today's bills from the cloud and checks count + total equal the POS → "Sync updated" or retry.
+  const SYNC_MAX_ATTEMPTS = 3;
+  const SYNC_STEP_TIMEOUT = 10000;   // ms to wait for the POS at each step
+  let syncState = null;
+  let syncBusy = false;
+
+  function syncRound(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+
+  function setSyncStatus(kind, text, showRetry) {
+    const box = document.getElementById('syncBanner');
+    box.className = 'sync-banner show ' + kind;
+    document.getElementById('syncBannerText').textContent = text;
+    document.getElementById('syncRetryBtn').style.display = showRetry ? '' : 'none';
+    const btn = document.getElementById('syncBtn');
+    if (btn) { btn.disabled = (kind === 'busy'); btn.style.opacity = (kind === 'busy') ? '0.6' : ''; }
+  }
+
+  function syncWithCloud() {
+    if (syncBusy) return;
+    loadLocalData();                       // same-browser POS log shortcut (if any)
+    updateDashboardMetrics();
+    renderSalesLogList();
+    startSync(1);
+  }
+
+  function startSync(attempt) {
+    syncBusy = true;
+    if (!fbDb || !fbAuth || !fbAuth.currentUser) return syncFail('Not connected to cloud — check internet / login', attempt);
+    const dayKey = getLocalDateKey(new Date());
+    const reqId = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    syncState = { reqId, attempt, dayKey, missing: null, timer: null };
+    setSyncStatus('busy', attempt > 1
+      ? `🔄 Retrying (${attempt}/${SYNC_MAX_ATTEMPTS})… asking POS to check`
+      : '🔄 Asking POS to check today’s sales…');
+    armSyncTimer();
+    fbDb.doc('sync/state').set({ reqId, dayKey, phase: 'requested', requestedAt: Date.now() })
+      .catch(e => { if (syncState && syncState.reqId === reqId) syncFail('Could not reach cloud (' + (e.code || e.message) + ')', attempt); });
+  }
+
+  function armSyncTimer() {
+    if (!syncState) return;
+    clearTimeout(syncState.timer);
+    const attempt = syncState.attempt, reqId = syncState.reqId;
+    syncState.timer = setTimeout(() => {
+      if (syncState && syncState.reqId === reqId) syncFail('POS did not respond — is the POS open and online?', attempt);
+    }, SYNC_STEP_TIMEOUT);
+  }
+
+  function syncFail(reason, attempt) {
+    if (syncState) clearTimeout(syncState.timer);
+    syncState = null;
+    if (attempt < SYNC_MAX_ATTEMPTS) {
+      setSyncStatus('busy', `⚠️ ${reason} — retrying (${attempt + 1}/${SYNC_MAX_ATTEMPTS})…`);
+      setTimeout(() => startSync(attempt + 1), 1500);
+    } else {
+      syncBusy = false;
+      setSyncStatus('error', `❌ Sync NOT updated: ${reason}`, true);
+    }
+  }
+
+  function handleSyncState(st) {
+    const sy = syncState;
+    if (!st || !sy || st.reqId !== sy.reqId || st.phase === 'requested') return;
+    armSyncTimer();
+    if (st.phase === 'checking') {
+      setSyncStatus('busy', '🔄 POS is comparing its sales log with the cloud…');
+    } else if (st.phase === 'sending') {
+      sy.missing = st.missing;
+      setSyncStatus('busy', `🔄 Syncing ${st.missing} bill(s)… batch ${st.batch} of ${st.totalBatches} (10 per batch)`);
+    } else if (st.phase === 'done') {
+      clearTimeout(sy.timer);
+      sy.missing = st.missing;
+      verifySync(st, sy);
+    } else if (st.phase === 'error') {
+      syncFail(st.error || 'POS reported a problem', sy.attempt);
+    }
+  }
+
+  async function verifySync(st, sy) {
+    try {
+      const snap = await fbDb.collection('bills').where('dayKey', '==', sy.dayKey).get({ source: 'server' });
+      let count = 0, total = 0;
+      snap.forEach(d => {
+        const raw = d.data();
+        count++; total += Number(raw.total) || 0;
+        mergeCloudBill(compactBill(Object.assign({}, raw, { billNo: raw.billNo || d.id })));
+      });
+      saveLocalData();
+      updateDashboardMetrics();
+      renderSalesLogList();
+      total = syncRound(total);
+      const posCount = st.posCount, posTotal = syncRound(st.posTotal);
+      if (syncState && syncState.reqId !== sy.reqId) return;
+      if (count === posCount && total === posTotal) {
+        syncState = null;
+        syncBusy = false;
+        setSyncStatus('ok', sy.missing === 0
+          ? `✅ Sync is up to date — ${count} bills · ₹${total.toFixed(2)} (matches POS)`
+          : `✅ Sync updated — ${count} bills · ₹${total.toFixed(2)} (matches POS)`);
+        return;
+      }
+      let reason = `totals don't match — POS: ${posCount} bills ₹${posTotal.toFixed(2)}, Cloud: ${count} bills ₹${total.toFixed(2)}`;
+      if (count > posCount) reason += ' (cloud has bills the POS no longer has — was the POS sales log cleared?)';
+      syncFail(reason, sy.attempt);
+    } catch (e) {
+      syncFail('Could not verify with the cloud (' + (e.code || e.message) + ')', sy.attempt);
+    }
+  }
+
+  // ─── SETTINGS ACTIONS ───
+  function clearAllCachedData() {
+    if (confirm('Clear local memory cache? (You can re-sync anytime)')) {
+      localStorage.removeItem(LS_SALES);
+      localStorage.removeItem(LS_AUDIT);
+      localStorage.removeItem(LS_CLOUD_TS);
+      localStorage.removeItem(LS_CLOUD_AUDIT_TS);
+      salesData = [];
+      auditLogs = [];
+      updateDashboardMetrics();
+      renderSalesLogList();
+      showToast('🗑 Local cache cleared — reloading from cloud…');
+      setTimeout(() => location.reload(), 900);
+    }
+  }
+
+  function updateSettingsCounts() {
+    document.getElementById('cacheBillsCount').textContent = salesData.length;
+    document.getElementById('cacheAuditCount').textContent = auditLogs.length;
+    const dishes = menuCategories.reduce((acc, c) => acc + (c.items ? c.items.length : 0), 0);
+    document.getElementById('cacheDishesCount').textContent = dishes;
+    const line = document.getElementById('cloudStatusLine');
+    if (line) {
+      const u = fbAuth && fbAuth.currentUser;
+      line.textContent = u ? ('✅ Signed in as ' + u.email + ' · project ' + FIREBASE_CONFIG.projectId) : 'Not signed in to cloud.';
+    }
+  }
+
+  // ─── INITIALIZE ───
+  function initApp() {
+    loadLocalData();
+    updateDashboardMetrics();
+    renderSalesLogList();
+    startCloudListeners();
+    updateSettingsCounts();
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+  });
+  </script>
+</body>
+</html>

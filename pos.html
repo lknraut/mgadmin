@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS - Maa Gayatri Hotel And Restaurant</title>
+  <meta name="description" content="Standalone Offline POS Desktop Billing Counter System for Maa Gayatri Hotel And Restaurant.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#141414">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MG POS">
+  <style>
+    :root {
+      --bg: #141414;
+      --bg2: #1C1C1C;
+      --bg3: #1d1b1b;
+      --bgtakeaway: #0d2501;
+      --card: #000000;
+      --bgorderitem: #020202;
+      --card2: #422323;
+      --itembox2: #380303;
+      --card9: #447c00;
+      --bgcustome: #2c2120;
+      --bgsearch1: #33322d;
+      --bgsidebar: #011100;
+      --hederbg: #0a6603;
+
+      --border: #6b5656;
+      --border2: #2A2A2A;
+      --borderoderrow2: #fffb00;
+
+      --text: #ffffff;
+      --text2: #fff6f6;
+      --text3: #ffffff;
+      --textsearch3: #da0000;
+      --textsearchbox: #ffffff;
+
+      --amber: #D4A84B;
+      --amber-dim: rgba(212,168,75,0.12);
+      --amber-muted: #8A6E2F;
+
+      --green: #4A9D62;
+      --green-dim: rgba(74,157,98,0.12);
+      --red: #C0392B;
+      --red-dim: rgba(192,57,43,0.12);
+
+      --shadow: 0 4px 20px rgba(0,0,0,0.6);
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative; z-index: 10;
+      background: var(--hederbg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo { font-size: 20px; font-weight: 700; opacity: 0.95; }
+    .header-title h1 {
+      font-size: 17px; font-weight: 700; color: #ffffff; letter-spacing: 0.2px;
+    }
+    .header-title p { font-size: 11px; color: #d9ff04; letter-spacing: 0.8px; text-transform: uppercase; margin-top: 1px; }
+
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    .header-clock {
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 15px; color: var(--text2);
+      background: var(--bg3); padding: 4px 10px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+    }
+    .gst-toggle {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 5px 12px; cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .gst-toggle:hover { border-color: var(--amber); }
+    .gst-toggle span { font-size: 13px; color: var(--text2); font-weight: 500; }
+    .toggle-pill {
+      width: 36px; height: 18px; border-radius: 100px;
+      background: var(--border); position: relative; transition: background 0.25s;
+    }
+    .toggle-pill.on { background: var(--amber); }
+    .toggle-pill::after {
+      content: ''; position: absolute;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--bg2); top: 3px; left: 3px; transition: left 0.25s;
+    }
+    .toggle-pill.on::after { left: 21px; }
+
+    /* ── MAIN LAYOUT ── */
+    .main { display: flex; min-height: calc(100vh - 60px); }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 210px; flex-shrink: 0;
+      background: var(--bgsidebar);
+      border-right: 1px solid var(--border);
+      padding: 16px 10px;
+      display: flex; flex-direction: column; gap: 4px;
+      overflow-y: auto;
+    }
+    .sidebar-section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
+      text-transform: uppercase; color: #d9ff04;
+      padding: 6px 8px 4px;
+    }
+    .table-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+      text-align: left; width: 100%;
+    }
+    .table-btn:hover { background: var(--bg3); border-color: var(--border); }
+    .table-btn.has-order { background: var(--bg3); border-color: var(--amber-muted); }
+
+    .table-btn-icon { font-size: 16px; flex-shrink: 0; opacity: 0.8; }
+    .table-btn-info { flex: 1; min-width: 0; }
+    .table-btn-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .table-btn-sub { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+    .table-btn-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border); flex-shrink: 0; transition: background 0.2s;
+    }
+    .table-btn.has-order .table-btn-dot { background: var(--amber); }
+    .takeaway-btn { background: var(--bgtakeaway) !important; border-color: var(--border) !important; }
+    .takeaway-btn .table-btn-name { color: var(--amber); }
+
+    /* ── WORKSPACE ── */
+    .workspace {
+      flex: 1; display: flex; flex-direction: column;
+      background: var(--bg); overflow: hidden; min-width: 0;
+    }
+    .minimised-strip {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 8px 14px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      min-height: 0;
+    }
+    .minimised-strip:empty { display: none; }
+    .mini-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      background: var(--bg3); border: 1px solid var(--border);
+      cursor: pointer; transition: all 0.15s;
+      font-size: 12px; font-weight: 600; color: var(--text2);
+    }
+    .mini-chip:hover { border-color: var(--amber); color: var(--amber); }
+    .mini-chip.has-items { border-color: var(--amber-muted); color: var(--amber); }
+    .mini-chip-total { font-family: Consolas, 'Courier New', monospace; font-size: 11px; color: var(--amber); }
+    .mini-chip-close {
+      background: none; border: none; color: var(--text3);
+      cursor: pointer; font-size: 13px; padding: 0 0 0 2px; line-height: 1;
+    }
+    .mini-chip-close:hover { color: var(--red); }
+
+    .workspace-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      color: var(--text3);
+    }
+    .workspace-empty .big-icon { font-size: 60px; opacity: 0.3; }
+    .workspace-empty p { font-size: 15px; color: var(--text3); }
+
+    /* ── ACTIVE ORDER WINDOW ── */
+    .order-windows { flex: 1; display: flex; overflow: hidden; }
+    .order-window {
+      display: none;
+      flex: 1; flex-direction: column;
+      background: var(--card);
+      overflow: hidden;
+      animation: slideIn 0.18s ease;
+    }
+    .order-window.active { display: flex; }
+    @keyframes slideIn { from { opacity:0; transform: translateX(10px); } to { opacity:1; transform: none; } }
+
+    .window-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 20px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .window-header-icon { font-size: 18px; opacity: 0.8; }
+    .window-header-title { flex: 1; font-size: 18px; font-weight: 700; color: var(--text); }
+    .window-header-total {
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 20px; color: var(--amber); font-weight: 700;
+    }
+    .window-controls { display: flex; gap: 6px; }
+    .win-btn {
+      width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--card2); color: var(--text2); cursor: pointer; font-size: 13px;
+      display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    }
+    .win-btn:hover { background: var(--border); color: var(--text); }
+    .win-btn-close:hover { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+
+    /* ── WINDOW BODY ── */
+    .window-body { flex: 1; display: flex; overflow: hidden; gap: 0; }
+    .menu-panel {
+      width: 46%; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+      background: var(--bg);
+    }
+    .menu-panel-inner {
+      flex: 1; overflow-y: auto; padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .order-panel {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden; background: var(--card);
+    }
+    .order-panel-inner {
+      flex: 1; overflow-y: auto; padding: 12px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .order-panel-footer {
+      padding: 12px 16px; border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 8px;
+      background: var(--bg2); flex-shrink: 0;
+    }
+
+    /* ── MENU SEARCH & ACCORDION ── */
+    .menu-search {
+      width: 100%; padding: 8px 11px; border-radius: var(--radius-sm);
+      background: var(--bgsearch1); border: 1px solid var(--border);
+      color: var(--textsearchbox); font-family: inherit; font-size: 13px;
+    }
+    .menu-search:focus { outline: none; border-color: var(--amber-muted); }
+    .menu-search::placeholder { color: #aaa; }
+    .search-results { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px 0; }
+
+    .cat-header {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 12px; border-radius: var(--radius-sm);
+      background: var(--bg3); border: 1px solid var(--border2);
+      cursor: pointer; transition: background 0.12s, border-color 0.12s; user-select: none;
+      font-size: 13px; margin: 2px;
+    }
+    .cat-header:hover { background: var(--card9); border-color: var(--border); }
+    .cat-header.open { border-color: var(--amber-muted); background: var(--card9); }
+    .cat-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cat-count { font-size: 11px; color: #ddd; }
+    .cat-arrow { font-size: 9px; color: #ddd; transition: transform 0.2s; }
+    .cat-header.open .cat-arrow { transform: rotate(180deg); color: var(--amber); }
+    .cat-items { display: none; flex-wrap: wrap; gap: 5px; padding: 7px 4px 3px; width: 100%; border-left: 2px solid var(--amber-muted); margin-bottom: 4px; }
+    .cat-items.open { display: flex; }
+
+    .menu-chip {
+      display: flex; align-items: baseline; gap: 6px;
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      background: var(--bg3); border: 1px solid var(--border2);
+      cursor: pointer; transition: background 0.12s, border-color 0.12s;
+    }
+    .menu-chip:hover { background: var(--card9); border-color: var(--border); }
+    .menu-chip-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .menu-chip-price { font-size: 12px; color: var(--amber); font-family: Consolas, 'Courier New', monospace; }
+
+    /* ── ORDER ITEMS ── */
+    .order-items-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+    .order-item-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: var(--radius-sm);
+      background: var(--bgorderitem); border: 1px solid var(--borderoderrow2);
+    }
+    .order-item-name { flex: 1; font-size: 14px; color: var(--text); font-weight: 500; }
+    .qty-controls { display: flex; align-items: center; gap: 5px; }
+    .qty-btn {
+      width: 28px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: var(--itembox2); color: var(--text); cursor: pointer;
+      font-size: 16px; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .qty-btn:hover { background: var(--border); }
+    .qty-num { font-family: Consolas, 'Courier New', monospace; font-size: 14px; font-weight: 700; color: var(--text); min-width: 22px; text-align: center; }
+    .item-total { font-family: Consolas, 'Courier New', monospace; font-size: 14px; color: var(--amber); min-width: 58px; text-align: right; }
+    .remove-item { background: none; border: none; color: #ff6666; cursor: pointer; font-size: 14px; padding: 2px 4px; line-height: 1; }
+    .remove-item:hover { color: var(--red); }
+
+    .custom-item-row {
+      display: flex; gap: 6px; align-items: center;
+      padding: 7px 8px; border-radius: var(--radius-sm);
+      background: var(--bgcustome); border: 1px dashed var(--border);
+      margin-top: 2px;
+    }
+    .custom-item-name {
+      flex: 1; background: none; border: none;
+      color: var(--text); font-size: 13px; font-family: inherit;
+      padding: 2px 0; min-width: 0;
+    }
+    .custom-item-name:focus { outline: none; border-bottom: 1px solid var(--amber-muted); }
+    .custom-item-name::placeholder { color: #bbb; }
+    .custom-item-price {
+      width: 72px; background: none; border: none;
+      color: var(--amber); font-size: 13px; font-family: Consolas, 'Courier New', monospace;
+      text-align: right; padding: 2px 0;
+    }
+    .custom-item-price:focus { outline: none; border-bottom: 1px solid var(--amber-muted); }
+    .custom-item-price::placeholder { color: #bbb; }
+    .custom-item-add {
+      background: var(--amber); color: #111; border: none;
+      border-radius: var(--radius-sm); padding: 5px 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      white-space: nowrap; transition: filter 0.15s;
+    }
+    .custom-item-add:hover { filter: brightness(1.1); }
+
+    .notes-field {
+      background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 7px 10px; font-family: inherit; font-size: 13px;
+      color: var(--text2); resize: none; width: 100%; line-height: 1.4;
+    }
+    .notes-field:focus { outline: none; border-color: var(--amber-muted); }
+    .notes-field::placeholder { color: #888; }
+
+    .kot-check { width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; accent-color: var(--amber); margin-right: 2px; }
+    .kot-hint { font-size: 11px; color: #ccc; text-align: right; padding: 2px 2px 0; }
+
+    /* ── SUMMARY ── */
+    .order-summary { border-top: 1px solid var(--border2); padding-top: 8px; display: flex; flex-direction: column; gap: 5px; }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; }
+    .summary-label { font-size: 14px; color: #ccc; }
+    .summary-value { font-family: Consolas, 'Courier New', monospace; font-size: 14px; color: var(--text2); }
+    .summary-total-label { font-size: 18px; font-weight: 700; color: var(--text); }
+    .summary-total-value { font-family: Consolas, 'Courier New', monospace; font-size: 20px; font-weight: 700; color: var(--amber); }
+
+    .discount-row { display: flex; align-items: center; gap: 8px; }
+    .discount-label { font-size: 14px; color: #ccc; white-space: nowrap; }
+    .discount-input {
+      flex: 1; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 5px 9px;
+      color: var(--text); font-size: 14px; font-family: Consolas, 'Courier New', monospace;
+    }
+    .discount-input:focus { outline: none; border-color: var(--amber-muted); }
+
+    .window-actions { display: flex; gap: 8px; }
+    .btn {
+      flex: 1; padding: 10px; border-radius: var(--radius-sm);
+      border: none; cursor: pointer; font-family: inherit;
+      font-size: 14px; font-weight: 600; transition: all 0.15s;
+    }
+    .btn-print { background: var(--amber); color: #111; }
+    .btn-print:hover { filter: brightness(1.1); }
+    .btn-clear { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+    .btn-clear:hover { border-color: var(--red); color: var(--red); }
+    .btn-kot {
+      width: 100%; padding: 9px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text2); font-family: inherit;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; text-align: center;
+    }
+    .btn-kot:hover { border-color: var(--amber-muted); color: var(--amber); }
+    .empty-order { font-size: 13px; color: #aaa; text-align: center; padding: 20px 8px; }
+
+    /* ── SALES LOG ── */
+    .log-panel {
+      width: 270px; flex-shrink: 0;
+      background: var(--bg2); border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      transition: width 0.25s ease;
+    }
+    .log-panel.collapsed { width: 42px; overflow: hidden; }
+    .log-panel.collapsed .log-total-bar,
+    .log-panel.collapsed .log-list,
+    .log-panel.collapsed .log-export-btn { display: none; }
+    .log-panel.collapsed .log-header { padding: 14px 0; justify-content: center; border-bottom: none; }
+    .log-panel.collapsed .log-header h3,
+    .log-panel.collapsed .log-count { display: none; }
+    .log-toggle-btn {
+      background: none; border: none; cursor: pointer;
+      color: #ccc; font-size: 13px; padding: 2px 4px;
+      border-radius: 4px; line-height: 1; transition: color 0.15s;
+      margin-left: auto; flex-shrink: 0;
+    }
+    .log-toggle-btn:hover { color: var(--amber); }
+    .log-panel.collapsed .log-toggle-btn { margin-left: 0; font-size: 16px; writing-mode: vertical-rl; padding: 8px 0; }
+    .log-header {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .log-header h3 { font-size: 13px; font-weight: 600; color: var(--text2); }
+    .log-count {
+      background: var(--amber-dim); color: var(--amber); font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 100px; border: 1px solid var(--amber-muted);
+    }
+    .log-total-bar {
+      padding: 9px 14px; background: var(--bg3); border-bottom: 1px solid var(--border2);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .log-total-label { font-size: 12px; color: #ccc; }
+    .log-total-val { font-family: Consolas, 'Courier New', monospace; font-size: 15px; font-weight: 700; color: var(--amber); }
+    .log-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .log-entry { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 10px; }
+    .log-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .log-entry-id { font-size: 11px; font-family: Consolas, 'Courier New', monospace; color: #ccc; }
+    .log-entry-total { font-family: Consolas, 'Courier New', monospace; font-size: 13px; font-weight: 600; color: var(--amber); }
+    .log-entry-meta { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 3px; }
+    .log-tag { font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .log-tag-table { background: var(--amber-dim); color: var(--amber); }
+    .log-tag-takeaway { background: var(--green-dim); color: var(--green); }
+    .log-tag-time { background: var(--bg2); color: #ccc; }
+    .log-tag-gst { background: var(--bg2); color: #ccc; }
+    .log-entry-items { font-size: 11px; color: #bbb; line-height: 1.4; }
+    .log-export-btn {
+      margin: 6px 8px 0; padding: 8px; border-radius: var(--radius-sm);
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text2); font-size: 12px; font-weight: 500; cursor: pointer;
+      text-align: center; transition: all 0.15s;
+    }
+    .log-export-btn:hover { border-color: var(--amber-muted); color: var(--amber); }
+    .log-export-btn:last-child { margin-bottom: 8px; }
+    .log-action-row { display: flex; gap: 5px; margin-top: 7px; }
+    .log-action-btn {
+      flex: 1; padding: 5px 4px; border-radius: 4px; font-size: 11px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border); background: var(--bg2);
+      color: #ddd; transition: all 0.15s; text-align: center;
+    }
+    .log-action-btn:hover:not(:disabled) { border-color: var(--amber-muted); color: var(--amber); }
+    .log-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .log-action-edit:hover:not(:disabled) { border-color: var(--green); color: var(--green); }
+
+    /* ── PRINT RECEIPT OVERLAY ── */
+    .print-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88); z-index: 9999;
+      align-items: center; justify-content: center;
+    }
+    .print-overlay.show { display: flex; }
+    .receipt-wrapper {
+      background: white; width: 300px; padding: 22px 18px;
+      font-family: 'Courier New', Courier, monospace; font-size: 13px; color: #111;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      max-height: 90vh; overflow-y: auto; position: relative;
+    }
+    .r-center { text-align: center; }
+    .r-bold { font-weight: 700; }
+    .r-line { border: none; border-top: 1px dashed #aaa; margin: 7px 0; }
+    .r-solid { border: none; border-top: 2px solid #333; margin: 7px 0; }
+    .r-row { display: flex; justify-content: space-between; margin: 2px 0; }
+    .r-total { font-size: 18px; font-weight: 800; }
+    .receipt-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .receipt-btn {
+      flex: 1; padding: 10px; border-radius: 6px; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      transition: filter 0.15s;
+    }
+    .receipt-btn-print { background: #2A2A2A; color: white; }
+    .receipt-btn-print:hover { filter: brightness(1.3); }
+    .receipt-btn-close { background: #eee; color: #333; }
+    .receipt-btn-close:hover { background: #ddd; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="header-logo">MGHR Online</div>
+      <div class="header-title">
+        <h1>माँ गायत्री होटेल आणि रेस्टोरेंट</h1>
+        <p>POS (Desktop Billing Counter V-4.8)</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-clock" id="clock">--:--:--</div>
+      <div class="gst-toggle" onclick="toggleGST()" title="Toggle GST">
+        <span>GST 5%</span>
+        <div class="toggle-pill" id="gstPill"></div>
+      </div>
+      <a href="manage.html" target="_blank" style="color:var(--text2);text-decoration:none;font-size:12px;background:var(--bg3);border:1px solid var(--border);padding:5px 10px;border-radius:var(--radius-sm);font-weight:600;display:inline-flex;align-items:center;gap:4px;">📊 Manager</a>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section-label">🚗 पार्सल</div>
+      <button class="table-btn takeaway-btn" onclick="openOrder('takeaway')" id="btn-takeaway">
+        <span class="table-btn-icon">📦</span>
+        <div class="table-btn-info">
+          <div class="table-btn-name">पार्सल</div>
+          <div class="table-btn-sub" id="sub-takeaway">सध्या ऑर्डर नाही</div>
+        </div>
+        <div class="table-btn-dot" id="dot-takeaway"></div>
+      </button>
+
+      <div class="sidebar-section-label" style="margin-top:8px">🪑 Dine In Tables</div>
+      <div style="font-size:10px;color:#aaa;padding:2px 8px 4px;letter-spacing:0.3px;">⌨ 1-9 · 0=T10 · -=T11 · ==T12 · P=Parcel</div>
+      <button onclick="minimiseAllOrders()" title="Minimise all open orders" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:13px;padding:4px 8px;border-radius:3px;text-align:left;" onmouseover="this.style.color='var(--amber)'" onmouseout="this.style.color='#aaa'">─ मिनीमाइज करा ⛔</button>
+
+      <button class="table-btn" onclick="openOrder('table1')" id="btn-table1"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 1</div><div class="table-btn-sub" id="sub-table1">Empty</div></div><div class="table-btn-dot" id="dot-table1"></div></button>
+      <button class="table-btn" onclick="openOrder('table2')" id="btn-table2"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 2</div><div class="table-btn-sub" id="sub-table2">Empty</div></div><div class="table-btn-dot" id="dot-table2"></div></button>
+      <button class="table-btn" onclick="openOrder('table3')" id="btn-table3"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 3</div><div class="table-btn-sub" id="sub-table3">Empty</div></div><div class="table-btn-dot" id="dot-table3"></div></button>
+      <button class="table-btn" onclick="openOrder('table4')" id="btn-table4"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 4</div><div class="table-btn-sub" id="sub-table4">Empty</div></div><div class="table-btn-dot" id="dot-table4"></div></button>
+      <button class="table-btn" onclick="openOrder('table5')" id="btn-table5"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 5</div><div class="table-btn-sub" id="sub-table5">Empty</div></div><div class="table-btn-dot" id="dot-table5"></div></button>
+      <button class="table-btn" onclick="openOrder('table6')" id="btn-table6"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 6</div><div class="table-btn-sub" id="sub-table6">Empty</div></div><div class="table-btn-dot" id="dot-table6"></div></button>
+      <button class="table-btn" onclick="openOrder('table7')" id="btn-table7"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 7</div><div class="table-btn-sub" id="sub-table7">Empty</div></div><div class="table-btn-dot" id="dot-table7"></div></button>
+      <button class="table-btn" onclick="openOrder('table8')" id="btn-table8"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 8</div><div class="table-btn-sub" id="sub-table8">Empty</div></div><div class="table-btn-dot" id="dot-table8"></div></button>
+      <button class="table-btn" onclick="openOrder('table9')" id="btn-table9"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 9</div><div class="table-btn-sub" id="sub-table9">Empty</div></div><div class="table-btn-dot" id="dot-table9"></div></button>
+      <button class="table-btn" onclick="openOrder('table10')" id="btn-table10"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 10</div><div class="table-btn-sub" id="sub-table10">Empty</div></div><div class="table-btn-dot" id="dot-table10"></div></button>
+      <button class="table-btn" onclick="openOrder('table11')" id="btn-table11"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 11</div><div class="table-btn-sub" id="sub-table11">Empty</div></div><div class="table-btn-dot" id="dot-table11"></div></button>
+      <button class="table-btn" onclick="openOrder('table12')" id="btn-table12"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 12</div><div class="table-btn-sub" id="sub-table12">Empty</div></div><div class="table-btn-dot" id="dot-table12"></div></button>
+      <button class="table-btn" onclick="openOrder('table13')" id="btn-table13"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 13</div><div class="table-btn-sub" id="sub-table13">Empty</div></div><div class="table-btn-dot" id="dot-table13"></div></button>
+      <button class="table-btn" onclick="openOrder('table14')" id="btn-table14"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 14</div><div class="table-btn-sub" id="sub-table14">Empty</div></div><div class="table-btn-dot" id="dot-table14"></div></button>
+      <button class="table-btn" onclick="openOrder('table15')" id="btn-table15"><span class="table-btn-icon">🪑</span><div class="table-btn-info"><div class="table-btn-name">Table 15</div><div class="table-btn-sub" id="sub-table15">Empty</div></div><div class="table-btn-dot" id="dot-table15"></div></button>
+    </div>
+
+    <!-- WORKSPACE -->
+    <div class="workspace" id="workspace">
+      <div class="minimised-strip" id="miniStrip"></div>
+      <div class="workspace-empty" id="emptyState">
+        <div class="big-icon">🍛</div>
+        <p>टेबल किंवा पार्सल निवडून ऑर्डर सुरू करा</p>
+      </div>
+      <div class="order-windows" id="orderWindows"></div>
+    </div>
+
+    <!-- LOG PANEL -->
+    <div class="log-panel" id="logPanel">
+      <div class="log-header">
+        <h3>📋 Sales Log</h3>
+        <span class="log-count" id="logCount">0</span>
+        <button class="log-toggle-btn" onclick="toggleLogPanel()" id="logToggleBtn" title="Collapse log">◀</button>
+      </div>
+      <div class="log-total-bar">
+        <span class="log-total-label">Today's Total</span>
+        <span class="log-total-val" id="logTotal">₹0.00</span>
+      </div>
+      <div class="log-list" id="logList">
+        <div style="text-align:center;color:#888;font-size:11px;padding:20px 0">No bills printed yet</div>
+      </div>
+      <div class="log-export-btn" onclick="exportLog()">⬇ Export Log (CSV)</div>
+      <div class="log-export-btn" onclick="clearLog()" style="color:var(--red);border-color:rgba(192,57,43,0.3)">🗑 Clear Log (End of Day)</div>
+    </div>
+  </div>
+
+  <!-- PRINT IFRAME & OVERLAY -->
+  <iframe id="printFrame" style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;" title="print" src="about:blank"></iframe>
+  <div class="print-overlay" id="printOverlay">
+    <div>
+      <div class="receipt-wrapper" id="receiptContent"></div>
+      <div class="receipt-actions">
+        <button class="receipt-btn receipt-btn-print" onclick="doPrint()">🖨️ Print Bill</button>
+        <button class="receipt-btn receipt-btn-close" onclick="closePrint()">✕ Close (No Print)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase (private cloud for owner sync; the POS still bills fully offline if these fail to load) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- STANDALONE EMBEDDED MENU DATA & POS SCRIPT (Works 100% Offline by double-clicking index.html) -->
+  <script>
+  // ═══════════════════════════════════════════════════════════════
+  //  FIREBASE CONFIG — paste YOUR values here (Firebase console →
+  //  Project settings → Your apps → Web app → firebaseConfig).
+  //  Use the SAME values in index.html and manage.html.
+  //  (This config is not a secret; your Firestore rules + login protect the data.)
+  // ═══════════════════════════════════════════════════════════════
+  const FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyD_vcDaXypwPKVWRHnoxs0RgWXz2L8-FV0',
+    authDomain: 'gayatri-hotel.firebaseapp.com',
+    projectId: 'gayatri-hotel',
+    storageBucket: 'gayatri-hotel.firebasestorage.app',
+    messagingSenderId: '830793741011',
+    appId: '1:830793741011:web:e94b5dc45aee8fa7d91a26'
+  };
+
+  // ─── EMBEDDED COMPLETE MENU COMPONENT ───
+  const MENU_CATEGORIES = [
+    {
+      id: 'container', label: 'कंटेनर', icon: '🧈',
+      items: [
+        { id: 'container', name: 'कंटेनर', price: 10 },
+        { id: 'container5', name: 'कंटेनर', price: 15 }
+      ]
+    },
+    {
+      id: 'tandoor_chapati', label: 'रोटी', icon: '🫓',
+      items: [
+        { id: 'sadi_chapati', name: 'साधी चपाती', price: 12 },
+        { id: 'butter_chapati', name: 'बटर चपाती', price: 15 },
+        { id: 'sadi_tandur', name: 'साधी तंदूर', price: 15 },
+        { id: 'butter_tandur', name: 'बटर तंदूर', price: 20 },
+        { id: 'kulcha', name: 'कुलचा', price: 35 },
+        { id: 'butter_kulcha', name: 'बटर कुलचा', price: 40 },
+        { id: 'nan', name: 'नान', price: 35 },
+        { id: 'butter_nan', name: 'बटर नान', price: 40 },
+        { id: 'garlic_nan', name: 'गार्लिक नान', price: 50 },
+        { id: 'sadha_paratha', name: 'साधा पराठा', price: 20 },
+        { id: 'sadha_butter_paratha', name: 'साधा बटर पराठा', price: 30 },
+        { id: 'masala_paratha', name: 'मसाला पराठा', price: 40 },
+        { id: 'tandur_lachha_paratha', name: 'तंदूर लच्छा पराठा', price: 20 },
+        { id: 'tandur_butter_lachha_paratha', name: 'तंदूर बटर लच्छा पराठा', price: 30 }
+      ]
+    },
+    {
+      id: 'Breaverages', label: 'पेय', icon: '🥛',
+      items: [
+        { id: 'pani_water_bottel_10', name: 'पाणी बोटल छोटी', price: 10 },
+        { id: 'pani_water_bottel_20', name: 'पाणी बोटल मोठी', price: 20 },
+        { id: 'lassi_20', name: 'लस्सी हाफ', price: 20 },
+        { id: 'lassi_35', name: 'लस्सी फूल', price: 35 },
+        { id: 'butter_lassi_25', name: 'बटर लस्सी हाफ', price: 25 },
+        { id: 'butter_lassi_40', name: 'बटर लस्सी फूल', price: 40 },
+        { id: 'cold_drink25', name: 'कोल्ड ड्रिंक', price: 25 },
+        { id: 'cold_drink30', name: 'कोल्ड ड्रिंक', price: 30 },
+        { id: 'cold_drink40', name: 'कोल्ड ड्रिंक', price: 40 },
+        { id: 'cold_drink45', name: 'कोल्ड ड्रिंक', price: 45 },
+        { id: 'tea', name: 'चाय', price: 10 },
+        { id: 'coffei', name: 'कॉफी', price: 25 }
+      ]
+    },
+    {
+      id: 'starter', label: 'स्टार्टर', icon: '🍢',
+      items: [
+        { id: 'vej_lollipop', name: 'वेज लॉलीपॉप', price: 150 },
+        { id: 'panir_chilli', name: 'पनिर चिल्ली', price: 150 },
+        { id: 'finger_chips', name: 'फिंगर चिप्स', price: 90 },
+        { id: 'vej_crispy', name: 'वेज क्रिस्पी', price: 150 },
+        { id: 'panir_65', name: 'पनिर ६५', price: 170 },
+        { id: 'panir_lollipop', name: 'पनिर लॉलीपॉप', price: 200 }
+      ]
+    },
+    {
+      id: 'papad', label: 'पापड', icon: '🥖',
+      items: [
+        { id: 'roast_papad', name: 'रोस्ट पापड', price: 20 },
+        { id: 'fry_papad', name: 'फ्राय पापड', price: 25 },
+        { id: 'masala_papad', name: 'मसाला पापड', price: 30 },
+        { id: 'roast_masala_papad', name: 'रोस्ट मसाला पापड', price: 30 }
+      ]
+    },
+    {
+      id: 'soup', label: 'सुप', icon: '🍲',
+      items: [
+        { id: 'manchau_soup', name: 'मनचाऊ सुप', price: 70 },
+        { id: 'hot_and_sour_soup', name: 'हॉट अँन्ड सोर सुप', price: 70 },
+        { id: 'tomato_soup', name: 'टोमॅटो सुप', price: 70 }
+      ]
+    },
+    {
+      id: 'salad', label: 'सलाद', icon: '🥗',
+      items: [
+        { id: 'green_salad', name: 'ग्रीन सलाद', price: 50 },
+        { id: 'jain_salad', name: 'जैन सलाद', price: 40 }
+      ]
+    },
+    {
+      id: 'dal_ka_kamal', label: 'दाल का कमाल', icon: '🫘',
+      items: [
+        { id: 'jira_dal', name: 'जिरा दाल', price: 100 },
+        { id: 'half_jeera_dal', name: 'हाफ जिरा दाल', price: 55 },
+        { id: 'dal_fry', name: 'दाल फ्राय', price: 110 },
+        { id: 'half_dal_fry', name: 'हाफ दाल फ्राय', price: 60 },
+        { id: 'butter_dal_fry', name: 'बटर दाल फ्राय', price: 120 },
+        { id: 'half_butter_dal_fry', name: 'हाफ बटर दाल फ्राय', price: 80 },
+        { id: 'dal_tadka', name: 'दाल तडका', price: 135 },
+        { id: 'half_dal_tadka', name: 'हाफ दाल तडका', price: 80 },
+        { id: 'dal_kolhapuri', name: 'दाल कोल्हापुरी', price: 135 },
+        { id: 'half_dal_kolhapuri', name: 'हाफ दाल कोल्हापुरी', price: 75 },
+        { id: 'dal_vachadi', name: 'दाल वच्हाडी', price: 140 },
+        { id: 'half_varhadi_dal', name: 'हाफ वऱ्हाडी दाल', price: 90 },
+        { id: 'dal_mugalai', name: 'दाल मुगलाई', price: 170 }
+      ]
+    },
+    {
+      id: 'rice', label: 'राईस', icon: '🍚',
+      items: [
+        { id: 'plain_rice', name: 'प्लेन राईस', price: 80 },
+        { id: 'half_plain_rice', name: 'हाफ प्लेन राईस', price: 40 },
+        { id: 'jira_rice', name: 'जिरा राईस', price: 90 },
+        { id: 'half_jeera_rice', name: 'हाफ जिरा राईस', price: 50 },
+        { id: 'steam_rice', name: 'स्टीम राईस', price: 100 },
+        { id: 'half_steam_rice', name: 'हाफ स्टीम राईस', price: 50 },
+        { id: 'garlic_rice', name: 'गार्लिक राईस', price: 140 },
+        { id: 'namdeo_rice', name: 'नामदेव राईस', price: 130 },
+        { id: 'masala_rice', name: 'मसाला राईस', price: 120 },
+        { id: 'dal_khichadi', name: 'दाल खिचडी', price: 120 },
+        { id: 'vej_pulav', name: 'वेज पुलाव', price: 120 },
+        { id: 'panir_pulav', name: 'पनिर पुलाव', price: 160 },
+        { id: 'vej_biryani', name: 'वेज बिर्याणी', price: 130 },
+        { id: 'vej_panir_biryani', name: 'वेज पनिर बिर्याणी', price: 160 },
+        { id: 'vej_hydrabadi_biryani', name: 'वेज हैद्राबादी बिर्याणी', price: 160 },
+        { id: 'vej_handi_biryani', name: 'वेज हंडी बिर्याणी', price: 140 },
+        { id: 'panir_handi_biryani', name: 'पनिर हंडी बिर्याणी', price: 160 }
+      ]
+    },
+    {
+      id: 'panir_ka_kamal', label: 'पनिर का कमाल', icon: '🧈',
+      items: [
+        { id: 'palak_panir', name: 'पालक पनिर', price: 150 },
+        { id: 'panir_matar', name: 'पनिर मटर', price: 150 },
+        { id: 'panir_kadai', name: 'पनिर कढई', price: 160 },
+        { id: 'panir_tawa', name: 'पनिर तवा', price: 170 },
+        { id: 'panir_vanhadi', name: 'पनिर वन्हाडी', price: 150 },
+        { id: 'panir_handi', name: 'पनिर हंडी', price: 170 },
+        { id: 'panir_bhurji_dry', name: 'पनिर भुर्जी ड्राय', price: 175 },
+        { id: 'panir_bhurji_curry', name: 'पनिर भुर्जी करी', price: 170 },
+        { id: 'panir_butter_masala', name: 'पनिर बटर मसाल', price: 150 },
+        { id: 'panir_tikka_masala', name: 'पनिर टिक्का मसाला', price: 170 },
+        { id: 'panir_tufani', name: 'पनिर तुफानी', price: 170 },
+        { id: 'panir_masala', name: 'पनिर मसाला', price: 150 },
+        { id: 'shahi_panir', name: 'शाही पनिर', price: 150 },
+        { id: 'panir_kolhapuri', name: 'पनिर कोल्हापुरी', price: 170 },
+        { id: 'panir_sagwala', name: 'पनिर सागवाल', price: 160 },
+        { id: 'panir_hydrabadi', name: 'पनिर हैद्राबादी', price: 170 },
+        { id: 'panir_chatpata', name: 'पनिर चटपटा', price: 160 },
+        { id: 'panir_takatak', name: 'पनिर टकाटक', price: 170 },
+        { id: 'panir_korma', name: 'पनिर कोरमा', price: 150 },
+        { id: 'chij_panir_butter_masala', name: 'चिज पनिर बटर मसाला', price: 180 },
+        { id: 'lachha_panir', name: 'लच्छा पनिर', price: 170 },
+        { id: 'panir_angara', name: 'पनिर अंगारा', price: 180 },
+        { id: 'panir_jayapuri', name: 'पनिर जयपुरी', price: 180 },
+        { id: 'panir_sawji', name: 'पनिर सावजी', price: 150 },
+        { id: 'panir_kofta', name: 'पनिर कोफ्ता', price: 180 }
+      ]
+    },
+    {
+      id: 'panir_special', label: 'पनिर स्पेशल', icon: '🧈',
+      items: [
+        { id: 'panir_mili_juli', name: 'पनिर मिली जुली', price: 250 },
+        { id: 'panir_lahori', name: 'पनिर लाहोरी', price: 250 },
+        { id: 'panir_lara', name: 'पनिर लारा', price: 250 },
+        { id: 'panir_afghani', name: 'पनिर अफगानी', price: 250 },
+        { id: 'panir_pasanda', name: 'पनिर पसंदा', price: 250 },
+        { id: 'panir_chij_ball_curry', name: 'पनिर चिज बॉल करी', price: 250 },
+        { id: 'panir_tiranga', name: 'पनिर तिरंगा', price: 300 },
+        { id: 'panir_patiyala', name: 'पनिर पटीयाला', price: 250 },
+        { id: 'panir_do_pyaja', name: 'पनिर दो प्याजा', price: 250 }
+      ]
+    },
+    {
+      id: 'veg_sabji', label: 'वेज सब्जी', icon: '🥘',
+      items: [
+        { id: 'jira_aalu', name: 'जिरा आलू', price: 90 },
+        { id: 'baingan_bharata', name: 'बैगन भरता', price: 110 },
+        { id: 'baingan_masala', name: 'बैगन मसाला', price: 110 },
+        { id: 'bhendi_masala', name: 'भेंडी मसाला', price: 150 },
+        { id: 'green_peas_masala', name: 'ग्रीन पिस मसाला', price: 135 },
+        { id: 'chana_masala', name: 'चना मसाला', price: 130 },
+        { id: 'aalu_matar', name: 'आलू मटर', price: 125 },
+        { id: 'dam_aalu', name: 'दम आलू', price: 130 },
+        { id: 'plain_palak', name: 'प्लेन पालक', price: 120 },
+        { id: 'shev_bhaji', name: 'शेव भाजी', price: 125 },
+        { id: 'aalu_gobhi_matar', name: 'आलू गोबी मटर', price: 135 },
+        { id: 'aalu_gobhi_masala', name: 'आलू गोबी मसाला', price: 130 },
+        { id: 'aalu_palak', name: 'आलू पालक', price: 120 },
+        { id: 'gobhi_masala', name: 'गोबी मसाला', price: 125 },
+        { id: 'gobhi_matar', name: 'गोबी मटर', price: 130 }
+      ]
+    },
+    {
+      id: 'special_sabji', label: 'स्पेशल सब्जी', icon: '🍛',
+      items: [
+        { id: 'mix_vej', name: 'मिक्स वेज', price: 140 },
+        { id: 'vej_kolhapuri', name: 'वेज कोल्हापुरी', price: 140 },
+        { id: 'vej_tufani', name: 'वेज तुफानी', price: 150 },
+        { id: 'vej_handi', name: 'वेज हन्डी', price: 150 },
+        { id: 'vej_tawa', name: 'वेज तवा', price: 150 },
+        { id: 'vej_kadhai', name: 'वेज कढाई', price: 150 },
+        { id: 'stop_capsicum', name: 'स्टॉप कॅप्सीकम', price: 140 },
+        { id: 'stop_tomato', name: 'स्टॉप टोमॅटो', price: 140 },
+        { id: 'methi_matar', name: 'मेथी मटर', price: 140 },
+        { id: 'methi_matar_malai', name: 'मेथी मटर मलाई', price: 170 },
+        { id: 'vej_hydrabadi', name: 'वेज हैद्राबादी', price: 150 },
+        { id: 'vej_kima_kasturi', name: 'वेज किमा कस्तुरी', price: 150 },
+        { id: 'vej_jayapuri', name: 'वेज जयपुरी', price: 150 },
+        { id: 'vej_maratha', name: 'वेज मराठा', price: 150 },
+        { id: 'vej_bhuna', name: 'वेज भूना', price: 150 },
+        { id: 'vej_angara', name: 'वेज अंगारा', price: 160 },
+        { id: 'vej_patiyala', name: 'वेज पटियाला', price: 160 },
+        { id: 'vej_andakari', name: 'वेज अंडाकरी', price: 140 },
+        { id: 'patodi', name: 'पाटोडी', price: 150 },
+        { id: 'vej_mili_juli', name: 'वेज मिली जुली', price: 200 },
+        { id: 'vej_tiranga', name: 'वेज तिरंगा', price: 200 }
+      ]
+    },
+    {
+      id: 'kofta_special', label: 'कोफ्ता स्पेशल', icon: '🥙',
+      items: [
+        { id: 'vej_kofta', name: 'वेज कोफ्ता', price: 140 },
+        { id: 'panir_kofta', name: 'पनिर कोफ्ता', price: 180 },
+        { id: 'malai_kofta', name: 'मलाई कोफ्ता', price: 140 },
+        { id: 'vej_punjabi_kofta', name: 'वेज पंजाबी कोफ्ता', price: 150 },
+        { id: 'vej_palak_kofta', name: 'वेज पालक कोफ्ता', price: 170 },
+        { id: 'panir_punjabi_kofta', name: 'पनिर पंजाबी कोफ्ता', price: 170 },
+        { id: 'panir_palak_kofta', name: 'पनिर पालक कोफ्ता', price: 180 },
+        { id: 'nargis_kofta', name: 'नरगिस कोफ्ता', price: 250 },
+        { id: 'gayatri_special_sabji1', name: 'गायत्री स्पेशल सब्जी', price: 300 }
+      ]
+    },
+    {
+      id: 'kaju_special', label: 'काजू स्पेशल', icon: '🥜',
+      items: [
+        { id: 'kaju_curry', name: 'काजू करी', price: 190 },
+        { id: 'kaju_masala', name: 'काजू मसाला', price: 190 },
+        { id: 'panir_kaju_curry', name: 'पनिर काजू करी', price: 190 },
+        { id: 'panir_kaju_masala', name: 'पनिर काजू मसाला', price: 190 },
+        { id: 'kaju_khoya', name: 'काजू खोया', price: 190 },
+        { id: 'kaju_mawa', name: 'काजू मावा', price: 200 }
+      ]
+    },
+    {
+      id: 'mushroom', label: 'मशरूम', icon: '🍄',
+      items: [
+        { id: 'mushroom_masala', name: 'मशरूम मसाला', price: 190 },
+        { id: 'mushroom_curry', name: 'मशरूम करी', price: 190 },
+        { id: 'panir_mushroom_masala', name: 'पनिर मशरूम मसाला', price: 200 },
+        { id: 'mushroom_panir_kadai', name: 'मशरूम पनिर कढई', price: 200 }
+      ]
+    },
+    {
+      id: 'vanhadi_special', label: 'वन्हाडी स्पेशल', icon: '🥘',
+      items: [
+        { id: 'gayatri_special_sabji', name: 'गायत्री स्पेशल सब्जी', price: 300 },
+        { id: 'panir_vanhadi1', name: 'पनिर वन्हाडी', price: 150 },
+        { id: 'vej_andakari', name: 'वेज अंडाकरी', price: 140 },
+        { id: 'patodi', name: 'पाटोडी', price: 150 },
+        { id: 'gud_bhaji', name: 'गुड भाजी', price: 150 },
+        { id: 'shev_tamatar', name: 'शेव टमाटर', price: 130 }
+      ]
+    },
+    {
+      id: 'ice-creme', label: 'आइस क्रीम', icon: '🍧',
+      items: [
+        { id: 'ice_Creme_10', name: 'आइसक्रीम', price: 10 },
+        { id: 'ice_Creme_15', name: 'आइसक्रीम', price: 15 },
+        { id: 'ice_Creme_20', name: 'आइसक्रीम', price: 20 },
+        { id: 'ice_Creme_25', name: 'आइसक्रीम', price: 25 },
+        { id: 'ice_Creme_30', name: 'आइसक्रीम', price: 30 },
+        { id: 'ice_Creme_35', name: 'आइसक्रीम', price: 35 },
+        { id: 'ice_Creme_40', name: 'आइसक्रीम', price: 40 },
+        { id: 'ice_Creme_45', name: 'आइसक्रीम', price: 45 },
+        { id: 'ice_Creme_50', name: 'आइसक्रीम', price: 50 },
+        { id: 'ice_Creme_55', name: 'आइसक्रीम', price: 55 },
+        { id: 'ice_Creme_60', name: 'आइसक्रीम', price: 60 }
+      ]
+    },
+    {
+      id: 'sweet', label: 'स्वीट', icon: '🍮',
+      items: [
+        { id: 'gulab_jamun', name: 'गुलाब जामुन', price: 20 },
+        { id: 'kala_jamun', name: 'काला जामुन', price: 30 },
+        { id: 'rasgulla', name: 'रसगुल्ला', price: 20 },
+        { id: 'chamcham', name: 'चमचम', price: 20 },
+        { id: 'rasmalai', name: 'रसमलाई', price: 40 },
+        { id: 'dahivadi', name: 'दहिवाटी', price: 25 },
+        { id: 'shrikhand', name: 'श्रीखंड', price: 30 }
+      ]
+    },
+    {
+      id: 'namkin', label: 'नमकीन', icon: '🥟',
+      items: [
+        { id: 'dahivada', name: 'दहिवडा', price: 40 },
+        { id: 'dahibundi', name: 'दहिबुंदी', price: 40 }
+      ]
+    },
+    {
+      id: 'rayta', label: 'रायता', icon: '🥣',
+      items: [
+        { id: 'veg_rayta', name: 'वेज रायता', price: 30 },
+        { id: 'bundi_rayta', name: 'बुंदी रायता', price: 30 }
+      ]
+    },
+    {
+      id: 'chaynij', label: 'चायनिज', icon: '🍜',
+      items: [
+        { id: 'noodles', name: 'नूडल्स', price: 80 },
+        { id: 'hakka_noodles', name: 'हक्का नूडल्स', price: 75 },
+        { id: 'shezwan_noodles', name: 'शेजवान नूडल्स', price: 90 },
+        { id: 'noodles_manchurian', name: 'नूडल्स + मन्चुरीयन', price: 95 },
+        { id: 'singapuri_noodles', name: 'सिंगापुरी नूडल्स', price: 90 },
+        { id: 'shev_noodles_manchurian', name: 'शे. नूडल्स मन्चुरीयन', price: 100 },
+        { id: 'chilli_garlic_noodles', name: 'चिली गार्लिक नूडल्स', price: 90 },
+        { id: 'manchurian_gravy', name: 'मन्चुरीयन ग्रेवी', price: 80 },
+        { id: 'manchurian_dry', name: 'मन्चुरीयन ड्राय', price: 90 },
+        { id: 'fried_rice', name: 'फ्राईड राईस', price: 80 },
+        { id: 'shezwan_fried_rice', name: 'शेजवान फ्राईड राईस', price: 90 },
+        { id: 'manchurian_rice', name: 'मन्चुरीयन राईस', price: 95 },
+        { id: 'shezwan_manchurian_rice', name: 'शेजवान मन्चुरीयन राईस', price: 105 },
+        { id: 'triple_rice', name: 'ट्रिपल राईस', price: 100 },
+        { id: 'triple_rice_gravy', name: 'ट्रिपल राईस ग्रेवी', price: 105 },
+        { id: 'singapuri_fried_rice', name: 'सिंगापुरी फ्राईड राईस', price: 85 },
+        { id: 'chaynij_bhel', name: 'चायनिज भेल', price: 100 },
+        { id: 'bambay_bhel', name: 'बॉम्बे भेल', price: 100 },
+        { id: 'panir_fried_rice', name: 'पनिर फ्राईड राईस', price: 115 },
+        { id: 'chilli_garlic_rice', name: 'चिली गार्लिक राईस', price: 95 },
+        { id: 'chilli_garlic_m_rice', name: 'चिली गार्लिक म. राईस', price: 100 },
+        { id: 'panir_manchurian_gravy', name: 'पनिर मन्चुरीयन ग्रेव्ही', price: 140 },
+        { id: 'panir_manchurian_dry', name: 'पनिर मन्चुरीयन ड्राय', price: 145 },
+        { id: 'gobhi_manchurian', name: 'गोबी मन्चुरीयन', price: 110 },
+        { id: 'panir_chilli_gravy', name: 'पनिर चिली ग्रेव्ही', price: 145 },
+        { id: 'half_noodles', name: 'हाफ नूडल्स', price: 50 },
+        { id: 'half_hakka_noodles', name: 'हाफ हक्का नूडल्स', price: 50 },
+        { id: 'half_shezwan_noodles', name: 'हाफ शेजवान नूडल्स', price: 55 },
+        { id: 'half_noodles_manchurian', name: 'हाफ नूडल्स + मन्चुरीयन', price: 60 },
+        { id: 'half_singapuri_noodles', name: 'हाफ सिंगापुरी नूडल्स', price: 55 },
+        { id: 'half_shev_noodles_manchurian', name: 'हाफ शे. नूडल्स मन्चुरीयन', price: 60 },
+        { id: 'half_chilli_garlic_noodles', name: 'हाफ चिली गार्लिक नूडल्स', price: 55 },
+        { id: 'half_manchurian_gravy', name: 'हाफ मन्चुरीयन ग्रेवी', price: 50 },
+        { id: 'half_manchurian_dry', name: 'हाफ मन्चुरीयन ड्राय', price: 50 },
+        { id: 'half_fried_rice', name: 'हाफ फ्राईड राईस', price: 50 },
+        { id: 'half_shezwan_fried_rice', name: 'हाफ शेजवान फ्राईड राईस', price: 55 },
+        { id: 'half_manchurian_rice', name: 'हाफ मन्चुरीयन राईस', price: 55 },
+        { id: 'half_shezwan_manchurian_rice', name: 'हाफ शेजवान मन्चुरीयन राईस', price: 65 },
+        { id: 'half_triple_rice', name: 'हाफ ट्रिपल राईस', price: 60 },
+        { id: 'half_triple_rice_gravy', name: 'हाफ ट्रिपल राईस ग्रेवी', price: 65 },
+        { id: 'half_singapuri_fried_rice', name: 'हाफ सिंगापुरी फ्राईड राईस', price: 50 },
+        { id: 'half_chaynij_bhel', name: 'हाफ चायनिज भेल', price: 60 },
+        { id: 'half_bambay_bhel', name: 'हाफ बॉम्बे भेल', price: 60 },
+        { id: 'half_panir_fried_rice', name: 'हाफ पनिर फ्राईड राईस', price: 75 },
+        { id: 'half_chilli_garlic_rice', name: 'हाफ चिली गार्लिक राईस', price: 50 },
+        { id: 'half_chilli_garlic_m_rice', name: 'हाफ चिली गार्लिक म. राईस', price: 60 },
+        { id: 'half_panir_manchurian_gravy', name: 'हाफ पनिर मन्चुरीयन ग्रेव्ही', price: 140 },
+        { id: 'half_panir_manchurian_dry', name: 'हाफ पनिर मन्चुरीयन ड्राय', price: 145 },
+        { id: 'half_gobhi_manchurian', name: 'हाफ गोबी मन्चुरीयन', price: 110 },
+        { id: 'half_panir_chilli_gravy', name: 'हाफ पनिर चिली ग्रेव्ही', price: 145 }
+      ]
+    },
+    {
+      id: 'south_indian', label: 'साउथ इंडियन', icon: '🫔',
+      items: [
+        { id: 'masala_dosa', name: 'मसाला दोसा', price: 55 },
+        { id: 'kataphis_dosa', name: 'कटफिस दोसा', price: 60 },
+        { id: 'paper_sadha_dosa', name: 'पेपर साधा दोसा', price: 90 },
+        { id: 'paper_masala_dosa', name: 'पेपर मसाला दोसा', price: 100 },
+        { id: 'paper_butter_masala_dosa', name: 'पेपर बटर मसाला दोसा', price: 120 },
+        { id: 'paper_butter_sadha_dosa', name: 'पेपर बटर साधा दोसा', price: 110 },
+        { id: 'plain_butter_dosa', name: 'प्लेन बटर दोसा', price: 60 },
+        { id: 'butter_masala_dosa', name: 'बटर मसाला दोसा', price: 65 },
+        { id: 'butter_kataphis_dosa', name: 'बटर कटफिस दोसा', price: 70 },
+        { id: 'mysur_masala_dosa', name: 'मैसूर मसाला दोसा', price: 80 },
+        { id: 'panir_mysur_dosa', name: 'पनिर मैसूर दोसा', price: 115 },
+        { id: 'chij_mysur_dosa', name: 'चिज मैसूर दोसा', price: 125 },
+        { id: 'panir_chij_mysur_dosa', name: 'पनिर चिज मैसूर दोसा', price: 130 },
+        { id: 'hydrabadi_dosa', name: 'हैद्राबादी दोसा', price: 95 },
+        { id: 'hydrabadi_special_chij_dosa', name: 'हैद्राबादी स्पेशल चिज दोसा', price: 105 },
+        { id: 'spring_roll', name: 'स्प्रींग रोल', price: 80 },
+        { id: 'panir_spring_roll', name: 'पनिर स्प्रींग रोल', price: 115 },
+        { id: 'chaynij_dosa', name: 'चायनिज दोसा', price: 85 },
+        { id: 'panir_dosa_plain', name: 'पनिर दोसा प्लेन', price: 100 },
+        { id: 'panir_masala_dosa', name: 'पनिर मसाला दोसा', price: 105 },
+        { id: 'chij_dosa_plain', name: 'चिज दोसा प्लेन', price: 80 },
+        { id: 'chij_masala_dosa', name: 'चिज मसाला दोसा', price: 90 },
+        { id: 'onion_masala_dosa', name: 'ऑनियन मसाला दोसा', price: 80 },
+        { id: 'tomato_masala_dosa', name: 'टोमॅटो मसाला दोसा', price: 80 },
+        { id: 'tomato_onion_masala_dosa', name: 'टोमॅटो ऑनियन मसाला दोसा', price: 85 },
+        { id: 'gayatri_special_dosa', name: 'गायत्री स्पेशल दोसा', price: 125 }
+      ]
+    },
+    {
+      id: 'south_indian_uttapam', label: 'साउथ इंडियन उत्तपम', icon: '🥞',
+      items: [
+        { id: 'onion_uttapam', name: 'ऑनियन उत्तपम', price: 80 },
+        { id: 'chij_onion_uttapam', name: 'चिज ऑनियन उत्तपम', price: 95 },
+        { id: 'panir_onion_uttapam', name: 'पनिर ऑनियन उत्तपम', price: 95 },
+        { id: 'panir_chij_onion_uttapam', name: 'पनिर चिज ऑनियन उत्तपम', price: 105 },
+        { id: 'tomato_uttapam', name: 'टोमॅटो उत्तपम', price: 80 },
+        { id: 'chij_tomato_uttapam', name: 'चिज टोमॅटो उत्तपम', price: 95 },
+        { id: 'panir_tomato_uttapam', name: 'पनिर टोमॅटो उत्तपम', price: 95 },
+        { id: 'panir_chij_tomato_uttapam', name: 'पनिर चिज टोमॅटो उत्तपम', price: 105 },
+        { id: 'masala_uttapam', name: 'मसाला उत्तपम', price: 80 },
+        { id: 'chij_masala_uttapam', name: 'चिज मसाला उत्तपम', price: 95 },
+        { id: 'panir_masala_uttapam', name: 'पनिर मसाला उत्तपम', price: 95 },
+        { id: 'panir_chij_masala_uttapam', name: 'पनिर चिज मसाला उत्तपम', price: 110 },
+        { id: 'tomato_onion_uttapam', name: 'टोमॅटो ऑनियन उत्तपम', price: 90 },
+        { id: 'chij_tomato_onion_uttapam', name: 'चिज टोमॅटो ऑनियन उत्तपम', price: 105 },
+        { id: 'panir_tomato_onion_uttapam', name: 'पनिर टोमॅटो ऑनियन उत्तपम', price: 105 },
+        { id: 'chij_panir_tomato_onion_uttapam', name: 'चिज पनिर टोमॅटो ऑनियन उत्तपम', price: 115 },
+        { id: 'uttapam_mix_masala', name: 'उत्तपम मिक्स मसाला', price: 95 },
+        { id: 'chij_mix_uttapam_masala', name: 'चिज मिक्स उत्तपम मसाला', price: 115 },
+        { id: 'panir_mix_uttapam_masala', name: 'पनिर मिक्स उत्तपम मसाला', price: 115 },
+        { id: 'chij_panir_mix_uttapam_masala', name: 'चिज पनिर मिक्स उत्तपम मसाला', price: 120 },
+        { id: 'panir_uttapam', name: 'पनिर उत्तपम', price: 115 },
+        { id: 'panir_chij_uttapam', name: 'पनिर चिज उत्तपम', price: 125 }
+      ]
+    },
+    {
+      id: 'special_pav_bhaji', label: 'स्पेशल पावभाजी', icon: '🥖',
+      items: [
+        { id: 'pav_bhaji', name: 'पाव भाजी', price: 60 },
+        { id: 'butter_pav_bhaji', name: 'बटर पावभाजी', price: 70 },
+        { id: 'extra_pav', name: 'एक्स्ट्रा पाव', price: 20 },
+        { id: 'extra_butter_pav', name: 'एक्स्ट्रा बटर पाव', price: 25 },
+        { id: 'extra_bhaji', name: 'एक्स्ट्रा भाजी', price: 30 }
+      ]
+    },
+    {
+      id: 'cake', label: 'केक', icon: '🧈',
+      items: [
+        { id: 'candle10', name: 'मेणबत्ती', price: 10 },
+        { id: 'pastry', name: 'पेस्ट्री', price: 40 },
+        { id: 'cake150', name: 'केक', price: 150 },
+        { id: 'cake200', name: 'केक', price: 200 },
+        { id: 'cake250', name: 'केक', price: 250 },
+        { id: 'cake300', name: 'केक', price: 300 },
+        { id: 'cake350', name: 'केक', price: 350 },
+        { id: 'cake400', name: 'केक', price: 400 },
+        { id: 'cake450', name: 'केक', price: 450 },
+        { id: 'cake500', name: 'केक', price: 500 },
+        { id: 'cake550', name: 'केक', price: 550 },
+        { id: 'cake600', name: 'केक', price: 600 }
+      ]
+    }
+  ];
+
+  let MENU = MENU_CATEGORIES.flatMap(cat =>
+    cat.items.map(item => ({ ...item, category: cat.id }))
+  );
+
+
+  // ═══ FIREBASE CLOUD (private owner database) ═══
+  // • Every printed/edited bill is saved to the cloud (kept on this PC if the internet is down).
+  // • The menu is set ONLY by the owner in manage.html; it is stored in this PC's memory and survives reloads.
+  const LS_OWNER_MENU = 'mgpos_owner_menu';
+  let ownerMenuVersion = 0;
+  const cloud = { db: null, auth: null, user: null, listening: false };
+
+  // Bills printed but not yet confirmed in the cloud (survives reloads / power cuts)
+  const LS_CLOUD_PENDING = 'mgpos_cloud_pending';
+  function getPending() { try { return JSON.parse(localStorage.getItem(LS_CLOUD_PENDING) || '[]'); } catch (e) { return []; } }
+  function setPending(a) { try { localStorage.setItem(LS_CLOUD_PENDING, JSON.stringify(a)); } catch (e) {} }
+  function addPending(no) { const a = getPending(); if (!a.includes(no)) { a.push(no); setPending(a); } }
+  function removePending(no) { setPending(getPending().filter(x => x !== no)); }
+  function pendingPill() {
+    const n = getPending().length;
+    if (n) setCloudPill('err', '☁️ ' + n + ' bill(s) waiting for internet — safe on this PC');
+    else setCloudPill('ok', '☁️ Cloud synced');
+  }
+
+  function _syncHash(str) {
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  }
+  function _syncBillSig(b) {
+    return _syncHash(b.billNo + '|' + (Number(b.total) || 0).toFixed(2) + '|' + (b.items || []).join(','));
+  }
+  function _syncRound(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+  function _dayKeyOfDate(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function _syncDayKey(b) {
+    let d = b.date ? new Date(b.date) : null;
+    if (!d || isNaN(d.getTime())) d = b.timestamp ? new Date(b.timestamp) : null;
+    return (!d || isNaN(d.getTime())) ? '' : _dayKeyOfDate(d);
+  }
+
+  // ── Owner menu ──
+  function menuLooksValid(cats) {
+    if (Array.isArray(cats) && cats.length === 1 && cats[0] && cats[0].id === 'tandoor_chapati' &&
+        Array.isArray(cats[0].items) && cats[0].items.length <= 2) return false;   // old 2-item test menu → ignore
+    if (Array.isArray(cats) && cats.reduce((n, c) => n + ((c && c.items && c.items.length) || 0), 0) === 0) return false;  // empty menu → ignore
+    return Array.isArray(cats) && cats.length > 0 && cats.every(c =>
+      c && typeof c.id === 'string' && typeof c.label === 'string' && Array.isArray(c.items) &&
+      c.items.every(it => it && typeof it.id === 'string' && typeof it.name === 'string' &&
+        typeof it.price === 'number' && isFinite(it.price) && it.price >= 0));
+  }
+  function setActiveMenu(cats) {
+    MENU_CATEGORIES.length = 0;
+    MENU_CATEGORIES.push(...cats);
+    MENU = MENU_CATEGORIES.flatMap(cat => cat.items.map(item => ({ ...item, category: cat.id })));
+  }
+  try {   // use the owner's saved menu (device memory) instead of the built-in default
+    const saved = JSON.parse(localStorage.getItem(LS_OWNER_MENU) || 'null');
+    if (saved && menuLooksValid(saved.categories)) {
+      setActiveMenu(saved.categories);
+      ownerMenuVersion = Number(saved.version) || 0;
+    }
+  } catch (e) { console.warn('owner menu load failed', e); }
+
+  function applyOwnerMenu(msg) {
+    try {
+      if (!msg || !menuLooksValid(msg.categories)) return;
+      const version = Number(msg.version) || 0;
+      if (version <= ownerMenuVersion) return;
+      localStorage.setItem(LS_OWNER_MENU, JSON.stringify({ version, categories: msg.categories }));
+      ownerMenuVersion = version;
+      setActiveMenu(msg.categories);
+      Object.keys(orders).forEach(id => { if (orders[id]) renderOrderWindow(id); });
+      showToast('🍽 Menu updated by Owner (' + MENU.length + ' dishes)');
+      if (cloud.db && cloud.user)
+        cloud.db.doc('config/menuAck').set({ version, dishes: MENU.length, at: Date.now() }).catch(() => {});
+    } catch (e) { console.warn('applyOwnerMenu failed', e); }
+  }
+
+  // ── Cloud status pill + one-time sign-in box ──
+  function setCloudPill(state, text) {
+    const el = document.getElementById('cloudPill');
+    if (!el) return;
+    const colors = { ok: ['#14301c', '#4A9D62'], busy: ['#12263a', '#3498DB'], err: ['#3a1512', '#C0392B'], signin: ['#3a2d0f', '#D4A84B'], off: ['#2a2a2a', '#777'] };
+    const c = colors[state] || colors.off;
+    el.style.background = c[0]; el.style.color = '#fff'; el.style.borderColor = c[1];
+    el.textContent = text;
+  }
+  function showCloudLogin() { const m = document.getElementById('cloudLogin'); if (m) { m.style.display = 'flex'; setTimeout(() => { const i = document.getElementById('cloudEmail'); if (i) i.focus(); }, 50); } }
+  function hideCloudLogin() { const m = document.getElementById('cloudLogin'); if (m) m.style.display = 'none'; }
+
+  function buildCloudUI() {
+    const pill = document.createElement('div');
+    pill.id = 'cloudPill';
+    pill.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:9998;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid #555;font-family:inherit;';
+    pill.onclick = () => {
+      if (!cloud.db) showToast('☁️ Cloud is not set up yet', 2500);
+      else if (!cloud.user) showCloudLogin();
+      else catchUpToday(true);
+    };
+    document.body.appendChild(pill);
+
+    const inp = 'width:100%;box-sizing:border-box;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #444;background:#121212;color:#fff;font-size:14px;';
+    const modal = document.createElement('div');
+    modal.id = 'cloudLogin';
+    modal.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:100000;align-items:center;justify-content:center;';
+    modal.innerHTML =
+      '<div style="background:#1c1c1c;color:#fff;padding:22px;border-radius:12px;width:min(92vw,340px);font-family:inherit;">' +
+      '<div style="font-weight:800;font-size:15px;margin-bottom:4px;">☁️ Owner cloud sign-in</div>' +
+      '<div style="font-size:12px;color:#aaa;margin-bottom:12px;">Sign in once on this PC. Billing works even if you skip.</div>' +
+      '<input id="cloudEmail" type="email" placeholder="Owner email" autocomplete="username" style="' + inp + '">' +
+      '<input id="cloudPass" type="password" placeholder="Password" autocomplete="current-password" style="' + inp + '">' +
+      '<div id="cloudLoginErr" style="color:#ff8a7d;font-size:12px;min-height:16px;"></div>' +
+      '<div style="display:flex;gap:8px;margin-top:6px;">' +
+      '<button id="cloudLoginBtn" style="flex:1;padding:10px;border:0;border-radius:8px;background:#D4A84B;color:#000;font-weight:800;cursor:pointer;">Sign in</button>' +
+      '<button id="cloudSkipBtn" style="padding:10px 14px;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer;">Skip</button>' +
+      '</div></div>';
+    document.body.appendChild(modal);
+    const doLogin = () => {
+      const err = document.getElementById('cloudLoginErr');
+      err.textContent = '';
+      cloud.auth.signInWithEmailAndPassword(
+        document.getElementById('cloudEmail').value.trim(),
+        document.getElementById('cloudPass').value
+      ).catch(e => { err.textContent = e.code === 'auth/network-request-failed' ? 'No internet connection' : 'Wrong email or password'; });
+    };
+    document.getElementById('cloudLoginBtn').onclick = doLogin;
+    document.getElementById('cloudSkipBtn').onclick = hideCloudLogin;
+    document.getElementById('cloudPass').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') doLogin(); });
+    document.getElementById('cloudEmail').addEventListener('keydown', e => e.stopPropagation());
+  }
+
+  function cloudConfigured() {
+    return !!FIREBASE_CONFIG.apiKey && !String(FIREBASE_CONFIG.apiKey).startsWith('PASTE');
+  }
+
+  function initCloud() {
+    buildCloudUI();
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}  // ask browser not to evict saved bills/menu
+    startCloud();
+  }
+
+  function loadFirebaseLater() {            // PC started with no internet and Firebase wasn't saved yet
+    const urls = ['app', 'auth', 'firestore'].map(n => 'https://www.gstatic.com/firebasejs/10.8.0/firebase-' + n + '-compat.js');
+    const next = i => {
+      if (i >= urls.length) { startCloud(); return; }
+      const s = document.createElement('script');
+      s.src = urls[i];
+      s.onload = () => next(i + 1);
+      s.onerror = () => window.addEventListener('online', loadFirebaseLater, { once: true });
+      document.head.appendChild(s);
+    };
+    next(0);
+  }
+
+  function startCloud() {
+    if (!window.firebase) {
+      setCloudPill('off', '☁️ Cloud off (no internet) — billing works');
+      window.addEventListener('online', loadFirebaseLater, { once: true });
+      return;
+    }
+    if (!cloudConfigured()) { setCloudPill('off', '☁️ Cloud not set up'); return; }
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      cloud.db = firebase.firestore();
+      cloud.db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+      cloud.auth = firebase.auth();
+      cloud.auth.onAuthStateChanged(user => {
+        cloud.user = user;
+        if (user) { hideCloudLogin(); onCloudSignedIn(); }
+        else { setCloudPill('signin', '☁️ Sign in to sync'); showCloudLogin(); }
+      });
+      window.addEventListener('offline', () => {
+        if (!cloud.user) return;
+        const n = getPending().length;
+        setCloudPill('err', n ? '☁️ Offline — ' + n + ' bill(s) waiting, safe on this PC' : '☁️ Offline — billing works, sales sync when internet returns');
+      });
+      window.addEventListener('online', () => { if (cloud.user) catchUpToday(false); });
+      // internet can come back without the browser noticing → retry every minute while bills are waiting
+      setInterval(() => { if (cloud.user && getPending().length) catchUpToday(false); }, 60000);
+    } catch (e) { console.warn('cloud init failed', e); setCloudPill('err', '☁️ Cloud error'); }
+  }
+
+  function onCloudSignedIn() {
+    setCloudPill('busy', '☁️ Connecting…');
+    if (!cloud.listening) {
+      cloud.listening = true;
+      cloud.db.doc('config/menu').onSnapshot(
+        snap => { if (snap.exists) applyOwnerMenu(snap.data()); },
+        err => console.warn('menu listener', err));
+      cloud.db.doc('sync/state').onSnapshot(
+        snap => { if (snap.exists) handleSyncState(snap.data()); },
+        err => { console.warn('sync listener', err); if (err && err.code === 'permission-denied') setCloudPill('err', '☁️ Cloud rules blocked this login'); });
+    }
+    catchUpToday(false);
+  }
+
+  // ── Bills → cloud ──
+  function cloudBillDoc(e) {
+    const d = JSON.parse(JSON.stringify(e));
+    d.dayKey = _syncDayKey(e);
+    d.updatedAt = Date.now();
+    return d;
+  }
+  function cloudPushBill(entry) {
+    if (!cloud.db) return;                           // cloud not set up at all
+    addPending(entry.billNo);                        // kept until the cloud confirms it
+    if (!cloud.user) { pendingPill(); return; }
+    setCloudPill('busy', '☁️ Saving…');
+    cloud.db.collection('bills').doc(entry.billNo).set(cloudBillDoc(entry))
+      .then(() => { removePending(entry.billNo); pendingPill(); })
+      .catch(err => { console.warn(err); pendingPill(); });
+  }
+  function cloudPushAudit(a) {
+    if (!cloud.db || !cloud.user) return;
+    const d = JSON.parse(JSON.stringify(a));
+    d.dayKey = _dayKeyOfDate(new Date());
+    d.updatedAt = Date.now();
+    cloud.db.collection('audit').add(d).catch(err => console.warn('audit push failed', err));
+  }
+  // Same function name the billing code already calls
+  function broadcastSalesEvent(type, payload) {
+    if (type === 'NEW_BILL' || type === 'EDIT_BILL') cloudPushBill(payload);
+    else if (type === 'AUDIT') cloudPushAudit(payload);
+  }
+
+  // Compare this PC's bills for a day with the cloud, send what's missing/different — 10 bills per batch
+  async function pushMissingBills(dayKey, onProgress) {
+    const todays = salesLog.filter(e => _syncDayKey(e) === dayKey);
+    const snap = await cloud.db.collection('bills').where('dayKey', '==', dayKey).get({ source: 'server' });
+    const have = {};
+    snap.forEach(d => { have[d.id] = _syncBillSig(d.data()); });
+    const pending = todays.filter(e => have[e.billNo] !== _syncBillSig(e));
+    const batches = [];
+    for (let i = 0; i < pending.length; i += 10) batches.push(pending.slice(i, i + 10));
+    for (let i = 0; i < batches.length; i++) {
+      const wb = cloud.db.batch();
+      batches[i].forEach(e => wb.set(cloud.db.collection('bills').doc(e.billNo), cloudBillDoc(e)));
+      await wb.commit();
+      if (onProgress) await onProgress(i + 1, batches.length, pending.length);
+    }
+    return {
+      posCount: todays.length,
+      posTotal: _syncRound(todays.reduce((s, e) => s + (Number(e.total) || 0), 0)),
+      missing: pending.length,
+      totalBatches: batches.length
+    };
+  }
+
+  let catchUpRunning = false;
+  async function catchUpToday(manual) {
+    if (!cloud.db || !cloud.user || catchUpRunning) return;
+    catchUpRunning = true;
+    setCloudPill('busy', '☁️ Syncing…');
+    try {
+      const now = new Date(), yest = new Date(now.getTime() - 86400000);
+      const days = new Set([_dayKeyOfDate(yest), _dayKeyOfDate(now)]);
+      const pend = getPending();
+      salesLog.forEach(e => { if (pend.includes(e.billNo)) days.add(_syncDayKey(e)); });
+      let sent = 0;
+      for (const k of days) { const r = await pushMissingBills(k); sent += r.missing; }
+      // every waiting bill's day was compared with the cloud and fixed → nothing is waiting any more
+      setPending(getPending().filter(no => { const e = salesLog.find(x => x.billNo === no); return e ? !days.has(_syncDayKey(e)) : false; }));
+      pendingPill();
+      if (manual) showToast(sent ? '☁️ Sent ' + sent + ' bill(s) to cloud' : '☁️ Cloud is up to date', 2500);
+      else if (sent) showToast('☁️ ' + sent + ' waiting bill(s) synced to cloud', 3000);
+    } catch (e) {
+      console.warn('catch-up failed', e);
+      if (e && e.code === 'permission-denied') setCloudPill('err', '☁️ Cloud rules blocked this login');
+      else if (getPending().length) pendingPill();
+      else setCloudPill('err', '☁️ Cloud not reachable — billing works, bills are safe on this PC');
+    }
+    catchUpRunning = false;
+  }
+
+  // Owner pressed Sync on the phone → check today, send anything missing in batches of 10, report back
+  let lastSyncReq = null;
+  async function handleSyncState(st) {
+    if (!st || st.phase !== 'requested' || st.reqId === lastSyncReq) return;
+    lastSyncReq = st.reqId;
+    const ref = cloud.db.doc('sync/state');
+    const upd = o => ref.set(Object.assign({ reqId: st.reqId, dayKey: st.dayKey, updatedAt: Date.now() }, o), { merge: true });
+    try {
+      showToast('📡 Owner sync requested…', 2500);
+      await upd({ phase: 'checking' });
+      const r = await pushMissingBills(st.dayKey, (b, tb, miss) => upd({ phase: 'sending', batch: b, totalBatches: tb, missing: miss }));
+      await upd({ phase: 'done', posCount: r.posCount, posTotal: r.posTotal, missing: r.missing, totalBatches: r.totalBatches });
+      setCloudPill('ok', '☁️ Cloud synced');
+    } catch (e) {
+      console.warn('sync request failed', e);
+      try { await upd({ phase: 'error', error: 'POS could not reach the cloud' }); } catch (_) {}
+    }
+  }
+
+  // ─── PWA: install as an app + open with no internet ───
+  let deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredInstall = e;
+    if (document.getElementById('pwaInstallBtn') || !document.body) return;
+    const b = document.createElement('div');
+    b.id = 'pwaInstallBtn';
+    b.textContent = '📲 Install POS app';
+    b.style.cssText = 'position:fixed;left:10px;bottom:42px;z-index:9998;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:#3a2d0f;color:#fff;border:1px solid #D4A84B;font-family:inherit;';
+    b.onclick = () => { deferredInstall.prompt(); deferredInstall = null; b.remove(); };
+    document.body.appendChild(b);
+  });
+  window.addEventListener('appinstalled', () => { const b = document.getElementById('pwaInstallBtn'); if (b) b.remove(); showToast('✅ POS installed on this PC', 3000); });
+
+  function setupPWA() {
+    if (!('serviceWorker' in navigator)) return;      // needs https:// (GitHub Pages) — not file://
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        if (w) w.addEventListener('statechange', () => {
+          if (w.state === 'installed' && navigator.serviceWorker.controller)
+            showToast('🔄 POS update downloaded — it applies next time you open the POS', 6000);
+        });
+      });
+    }).catch(err => console.warn('service worker not registered', err));
+  }
+
+  // ─── STORAGE KEYS ───
+  const LS_ORDERS     = 'mgpos_orders';
+  const LS_SALES_LOG  = 'mgpos_saleslog';
+  const LS_COUNTER    = 'mgpos_billcounter';
+  const LS_GST        = 'mgpos_gst';
+
+  let gstEnabled = true;
+  const GST_RATE = 5;
+  let billCounter = 1;
+  let salesLog = [];
+  let pendingClearId = null;
+  let pendingLogEntry = null;
+  const openCats = {};
+  const orders = {};
+
+  const TABLE_LABELS = {
+    takeaway: '📦 पार्सल',
+    table1: '🪑 Table 1', table2: '🪑 Table 2', table3: '🪑 Table 3',
+    table4: '🪑 Table 4', table5: '🪑 Table 5', table6: '🪑 Table 6',
+    table7: '🪑 Table 7', table8: '🪑 Table 8', table9: '🪑 Table 9',
+    table10: '🪑 Table 10', table11: '🪑 Table 11',
+    table12: '🪑 Table 12', table13: '🪑 Table 13',
+    table14: '🪑 Table 14', table15: '🪑 Table 15'
+  };
+
+  // ─── OFFLINE PERSISTENCE ───
+  function saveState() {
+    try {
+      const ordersToSave = {};
+      Object.keys(orders).forEach(k => {
+        if (!k.startsWith('edit_')) ordersToSave[k] = orders[k];
+      });
+      localStorage.setItem(LS_ORDERS, JSON.stringify(ordersToSave));
+      localStorage.setItem(LS_SALES_LOG, JSON.stringify(salesLog));
+      localStorage.setItem(LS_COUNTER, String(billCounter));
+      localStorage.setItem(LS_GST, gstEnabled ? '1' : '0');
+    } catch(e) {
+      console.warn('localStorage save failed', e);
+    }
+  }
+
+  function loadState() {
+    try {
+      const g = localStorage.getItem(LS_GST);
+      if (g !== null) gstEnabled = g === '1';
+      const c = localStorage.getItem(LS_COUNTER);
+      if (c) billCounter = parseInt(c) || 1;
+      const sl = localStorage.getItem(LS_SALES_LOG);
+      if (sl) salesLog = JSON.parse(sl);
+      const od = localStorage.getItem(LS_ORDERS);
+      if (od) {
+        const saved = JSON.parse(od);
+        Object.assign(orders, saved);
+      }
+    } catch(e) {
+      console.warn('localStorage load failed', e);
+    }
+  }
+
+  function updateClock() {
+    const el = document.getElementById('clock');
+    if (el) el.textContent = new Date().toLocaleTimeString('en-IN', { hour12: false });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function toggleGST() {
+    gstEnabled = !gstEnabled;
+    const pill = document.getElementById('gstPill');
+    if (pill) pill.className = 'toggle-pill' + (gstEnabled ? ' on' : '');
+    Object.keys(orders).forEach(id => { if (orders[id]) renderOrderWindow(id); });
+    saveState();
+  }
+
+  // ─── WINDOW MANAGEMENT ───
+  function openOrder(tableId) {
+    document.getElementById('emptyState').style.display = 'none';
+
+    if (!orders[tableId]) {
+      orders[tableId] = { items: [], notes: '', minimized: false, discount: 0 };
+    }
+
+    Object.keys(orders).forEach(id => {
+      if (id !== tableId && !id.startsWith('edit_') && orders[id]) {
+        orders[id].minimized = true;
+      }
+    });
+
+    orders[tableId].minimized = false;
+
+    Object.keys(orders).forEach(id => {
+      if (orders[id]) renderOrderWindow(id);
+    });
+
+    setActiveWindow(tableId);
+    updateSidebarButton(tableId);
+    updateMiniStrip();
+    saveState();
+  }
+
+  function setActiveWindow(tableId) {
+    document.querySelectorAll('.order-window').forEach(w => w.classList.remove('active'));
+    const el = document.getElementById('win-' + tableId);
+    if (el) el.classList.add('active');
+  }
+
+  function updateMiniStrip() {
+    const strip = document.getElementById('miniStrip');
+    if (!strip) return;
+    const minimised = Object.keys(orders).filter(id =>
+      orders[id] && orders[id].minimized && !id.startsWith('edit_')
+    );
+    if (!minimised.length) { strip.innerHTML = ''; return; }
+
+    strip.innerHTML = minimised.map(id => {
+      const order = orders[id];
+      const subtotal = calcSubtotal(order);
+      const gst = gstEnabled ? subtotal * GST_RATE / 100 : 0;
+      const total = Math.max(0, subtotal + gst - (order.discount || 0));
+      const hasItems = order.items.length > 0;
+      return `
+        <div class="mini-chip ${hasItems ? 'has-items' : ''}" onclick="openOrder('${id}')">
+          <span>${TABLE_LABELS[id] || id}</span>
+          ${hasItems ? `<span class="mini-chip-total">₹${total.toFixed(0)}</span>` : ''}
+          <button class="mini-chip-close" onclick="event.stopPropagation();closeOrder('${id}')" title="Close">✕</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleCat(tableId, catId) {
+    if (!openCats[tableId]) openCats[tableId] = new Set();
+    const s = openCats[tableId];
+    const hdr = document.getElementById(`cathdr-${tableId}-${catId}`);
+    const items = document.getElementById(`catitems-${tableId}-${catId}`);
+    if (!hdr || !items) return;
+    if (s.has(catId)) {
+      s.delete(catId);
+      hdr.classList.remove('open');
+      items.classList.remove('open');
+    } else {
+      s.add(catId);
+      hdr.classList.add('open');
+      items.classList.add('open');
+    }
+  }
+
+  function searchMenu(tableId, query) {
+    const catDiv = document.getElementById('catscroll-' + tableId);
+    const resultsDiv = document.getElementById('searchresults-' + tableId);
+    if (!query || !query.trim()) {
+      if (catDiv) catDiv.style.display = '';
+      if (resultsDiv) { resultsDiv.style.display = 'none'; resultsDiv.innerHTML = ''; }
+      return;
+    }
+    if (catDiv) catDiv.style.display = 'none';
+    if (resultsDiv) {
+      resultsDiv.style.display = 'flex';
+      const q = query.trim().toLowerCase();
+      const matches = MENU.filter(it => it.name.toLowerCase().includes(q) || it.id.toLowerCase().includes(q));
+      if (!matches.length) {
+        resultsDiv.innerHTML = '<div style="font-size:12px;color:var(--textsearch3);padding:6px">No items found</div>';
+        return;
+      }
+      resultsDiv.innerHTML = matches.map(it => `
+        <div class="menu-chip" onclick="addItem('${tableId}','${it.id}')">
+          <span class="menu-chip-name">${it.name}</span>
+          <span class="menu-chip-price">₹${it.price}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  function calcSubtotal(order) {
+    if (!order || !order.items) return 0;
+    return order.items.reduce((sum, it) => {
+      if (it.custom) return sum + (it.price * it.qty);
+      const def = MENU.find(m => m.id === it.id);
+      return sum + (def ? def.price * it.qty : 0);
+    }, 0);
+  }
+
+  // ─── RENDER WINDOW ───
+  function renderOrderWindow(tableId) {
+    const order = orders[tableId];
+    if (!order) return;
+    const subtotal = calcSubtotal(order);
+    const gstAmt = gstEnabled ? +(subtotal * GST_RATE / 100).toFixed(2) : 0;
+    const discount = parseFloat(order.discount || 0) || 0;
+    const total = Math.max(0, subtotal + gstAmt - discount);
+    const isEdit = tableId.startsWith('edit_');
+    const label = isEdit
+      ? `✏️ Editing Bill ${order._originalBillNo}`
+      : (TABLE_LABELS[tableId] || tableId);
+
+    const html = `
+      <div class="window-header">
+        <span class="window-header-icon">${tableId === 'takeaway' ? '📦' : isEdit ? '✏️' : '🪑'}</span>
+        <span class="window-header-title">${label}</span>
+        <span class="window-header-total">₹${total.toFixed(2)}</span>
+        <div class="window-controls">
+          <button class="win-btn win-btn-close" onclick="closeOrder('${tableId}')" title="Close">✕</button>
+        </div>
+      </div>
+      <div class="window-body">
+
+        <!-- LEFT: MENU PANEL -->
+        <div class="menu-panel">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--border2);flex-shrink:0;">
+            <input class="menu-search" type="text" placeholder="Search menu..."
+              oninput="searchMenu('${tableId}', this.value)" id="search-${tableId}">
+          </div>
+          <div id="searchresults-${tableId}" class="search-results" style="display:none;padding:8px 12px;flex-wrap:gap:5px;"></div>
+          <div class="menu-panel-inner" id="catscroll-${tableId}">
+            <div style="display:flex;flex-wrap:wrap;gap:4px;padding:2px;">
+              ${MENU_CATEGORIES.map(cat => `
+                <div style="display:contents">
+                  <div class="cat-header" id="cathdr-${tableId}-${cat.id}"
+                    onclick="toggleCat('${tableId}','${cat.id}')">
+                    <span class="cat-icon">${cat.icon}</span>
+                    <span class="cat-name">${cat.label}</span>
+                    <span class="cat-count">(${cat.items.length})</span>
+                    <span class="cat-arrow">▼</span>
+                  </div>
+                  <div class="cat-items" id="catitems-${tableId}-${cat.id}">
+                    ${cat.items.map(item => `
+                      <div class="menu-chip" onclick="addItem('${tableId}','${item.id}')">
+                        <span class="menu-chip-name">${item.name}</span>
+                        <span class="menu-chip-price">₹${item.price}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: ORDER PANEL -->
+        <div class="order-panel">
+          <div class="order-panel-inner">
+            <div class="order-items-list" id="items-${tableId}">
+              ${renderOrderItems(tableId)}
+            </div>
+            <div class="kot-hint">☑ Tick items to include in KOT</div>
+            <div class="custom-item-row">
+              <input class="custom-item-name" type="text"
+                id="custom-name-${tableId}" placeholder="Custom item name..."
+                onkeydown="if(event.key==='Enter') addCustomItem('${tableId}')">
+              <span style="color:#aaa;font-size:13px;">₹</span>
+              <input class="custom-item-price" type="number"
+                id="custom-price-${tableId}" placeholder="0" min="0"
+                onkeydown="if(event.key==='Enter') addCustomItem('${tableId}')">
+              <button class="custom-item-add" onclick="addCustomItem('${tableId}')">+ Add</button>
+            </div>
+            <textarea class="notes-field" rows="2" placeholder="Special instructions / notes..."
+              onchange="orders['${tableId}'].notes=this.value; saveState();"
+              id="notes-${tableId}">${order.notes || ''}</textarea>
+          </div>
+
+          <div class="order-panel-footer">
+            <div class="order-summary">
+              <div class="summary-row">
+                <span class="summary-label">Subtotal</span>
+                <span class="summary-value">₹${subtotal.toFixed(2)}</span>
+              </div>
+              ${gstEnabled ? `<div class="summary-row">
+                <span class="summary-label">GST @ ${GST_RATE}%</span>
+                <span class="summary-value">₹${gstAmt.toFixed(2)}</span>
+              </div>` : ''}
+              <div class="discount-row">
+                <span class="discount-label">Discount ₹</span>
+                <input class="discount-input" type="number" min="0" placeholder="0"
+                  value="${order.discount || ''}"
+                  oninput="setDiscount('${tableId}', this.value)">
+              </div>
+              <div class="summary-row" style="margin-top:6px;border-top:1px solid var(--border2);padding-top:6px;">
+                <span class="summary-total-label">TOTAL</span>
+                <span class="summary-total-value">₹${total.toFixed(2)}</span>
+              </div>
+            </div>
+            <div class="window-actions">
+              <button class="btn btn-clear" onclick="clearOrder('${tableId}')">🗑 Clear</button>
+              ${isEdit
+                ? `<button class="btn btn-print" onclick="saveAndReprint('${tableId}')" style="font-size:14px;">💾 Save &amp; Reprint</button>`
+                : `<button class="btn btn-print" onclick="printBill('${tableId}')" style="font-size:14px;">🖨️ Print Bill</button>`}
+            </div>
+            <button class="btn btn-kot" onclick="printKOT('${tableId}')">🧾 Print KOT (Kitchen)</button>
+          </div>
+        </div>
+
+      </div>
+    `;
+
+    let el = document.getElementById('win-' + tableId);
+    if (el) {
+      el.innerHTML = html;
+    } else {
+      el = document.createElement('div');
+      el.className = 'order-window';
+      el.id = 'win-' + tableId;
+      el.innerHTML = html;
+      document.getElementById('orderWindows').appendChild(el);
+    }
+  }
+
+  function renderOrderItems(tableId) {
+    const order = orders[tableId];
+    if (!order || !order.items.length) {
+      return '<div class="empty-order">No items added yet. Select a category on the left.</div>';
+    }
+    return order.items.map((it, idx) => {
+      const isCustom = it.custom === true;
+      const name = isCustom ? it.name : (MENU.find(m => m.id === it.id) || {}).name || it.id;
+      const price = isCustom ? it.price : (MENU.find(m => m.id === it.id) || {}).price || 0;
+      const checked = it.kotSelected !== false ? 'checked' : '';
+      const sentQty = it.kotSentQty || 0;
+      const newQty = it.qty - sentQty;
+      const kotBadge = newQty > 0
+        ? `<span style="font-size:10px;color:var(--amber);margin-left:4px">(+${newQty} new)</span>`
+        : `<span style="font-size:10px;color:#aaa;margin-left:4px">(sent)</span>`;
+      return `
+        <div class="order-item-row">
+          <input type="checkbox" class="kot-check" ${checked}
+            onchange="toggleKOT('${tableId}',${idx},this.checked)" title="Include in KOT">
+          <span class="order-item-name">${name} ${kotBadge}</span>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty('${tableId}',${idx},-1)">−</button>
+            <span class="qty-num">${it.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${tableId}',${idx},1)">+</button>
+          </div>
+          <span class="item-total">₹${(price * it.qty).toFixed(0)}</span>
+          <button class="remove-item" onclick="removeItem('${tableId}',${idx})">✕</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ─── ITEM OPERATIONS ───
+  function addItem(tableId, itemId) {
+    const order = orders[tableId];
+    if (!order) return;
+    const existing = order.items.find(it => it.id === itemId);
+    if (existing) {
+      existing.qty++;
+    } else {
+      order.items.push({ id: itemId, qty: 1, kotSelected: true, kotSentQty: 0 });
+    }
+    renderOrderWindow(tableId);
+    updateSidebarButton(tableId);
+    saveState();
+  }
+
+  function addCustomItem(tableId) {
+    const nameEl  = document.getElementById('custom-name-' + tableId);
+    const priceEl = document.getElementById('custom-price-' + tableId);
+    if (!nameEl || !priceEl) return;
+    const name = nameEl.value.trim();
+    const price = parseFloat(priceEl.value) || 0;
+    if (!name) { nameEl.focus(); return; }
+    if (price <= 0) { priceEl.focus(); return; }
+
+    orders[tableId].items.push({
+      id: 'custom_' + Date.now(),
+      name, price, qty: 1,
+      custom: true, kotSelected: true, kotSentQty: 0
+    });
+    nameEl.value = '';
+    priceEl.value = '';
+    nameEl.focus();
+    renderOrderWindow(tableId);
+    updateSidebarButton(tableId);
+    saveState();
+  }
+
+  function changeQty(tableId, idx, delta) {
+    const order = orders[tableId];
+    if (!order || !order.items[idx]) return;
+    order.items[idx].qty += delta;
+    if (order.items[idx].qty <= 0) order.items.splice(idx, 1);
+    renderOrderWindow(tableId);
+    updateSidebarButton(tableId);
+    saveState();
+  }
+
+  function removeItem(tableId, idx) {
+    const order = orders[tableId];
+    if (!order || !order.items[idx]) return;
+    order.items.splice(idx, 1);
+    renderOrderWindow(tableId);
+    updateSidebarButton(tableId);
+    saveState();
+  }
+
+  function setDiscount(tableId, val) {
+    if (!orders[tableId]) return;
+    orders[tableId].discount = parseFloat(val) || 0;
+    renderOrderWindow(tableId);
+    saveState();
+  }
+
+  function clearOrder(tableId) {
+    if (confirm('Clear all items from ' + (TABLE_LABELS[tableId] || tableId) + '?')) {
+      orders[tableId] = { items: [], notes: '', minimized: false, discount: 0 };
+      renderOrderWindow(tableId);
+      updateSidebarButton(tableId);
+      saveState();
+    }
+  }
+
+  function closeOrder(tableId) {
+    if (tableId.startsWith('edit_')) {
+      delete orders[tableId];
+      const win = document.getElementById('win-' + tableId);
+      if (win) win.remove();
+      const realKeys = Object.keys(orders).filter(k => !k.startsWith('edit_'));
+      if (realKeys.length === 0) document.getElementById('emptyState').style.display = '';
+      return;
+    }
+    const order = orders[tableId];
+    if (order && order.items && order.items.length > 0) {
+      const subtotal = calcSubtotal(order);
+      const total = subtotal + (gstEnabled ? subtotal * GST_RATE / 100 : 0);
+      if (!confirm(`⚠️ ${TABLE_LABELS[tableId] || tableId} has ${order.items.length} item(s) worth ₹${total.toFixed(2)}.\n\nAre you sure you want to close this order?`)) {
+        return;
+      }
+    }
+    delete orders[tableId];
+    const el = document.getElementById('win-' + tableId);
+    if (el) el.remove();
+    updateSidebarButton(tableId);
+
+    const remaining = Object.keys(orders).filter(id => !orders[id].minimized && !id.startsWith('edit_'));
+    if (remaining.length > 0) {
+      setActiveWindow(remaining[0]);
+    } else {
+      document.querySelectorAll('.order-window').forEach(w => w.classList.remove('active'));
+      if (Object.keys(orders).filter(id => !id.startsWith('edit_')).length === 0) {
+        document.getElementById('emptyState').style.display = '';
+      }
+    }
+    updateMiniStrip();
+    saveState();
+  }
+
+  function minimiseAllOrders() {
+    Object.keys(orders).forEach(id => {
+      if (orders[id]) orders[id].minimized = true;
+    });
+    document.querySelectorAll('.order-window').forEach(w => w.classList.remove('active'));
+    document.getElementById('emptyState').style.display = '';
+    updateMiniStrip();
+    saveState();
+  }
+
+  function toggleKOT(tableId, idx, checked) {
+    if (orders[tableId] && orders[tableId].items[idx]) {
+      orders[tableId].items[idx].kotSelected = checked;
+    }
+  }
+
+  // ─── PRINTING VIA IFRAME ───
+  function printViaIframe(bodyHTML, cssText) {
+    try {
+      const iframe = document.getElementById('printFrame');
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + cssText + '</style></head><body>' + bodyHTML + '</body></html>');
+      doc.close();
+      setTimeout(() => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch(e) {
+          const w = window.open('', '_blank', 'width=400,height=600');
+          if (w) {
+            w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + cssText + '</style></head><body>' + bodyHTML + '</body></html>');
+            w.document.close();
+            w.focus();
+            w.print();
+            setTimeout(() => w.close(), 1000);
+          }
+        }
+      }, 300);
+    } catch(e) {
+      const w = window.open('', '_blank', 'width=400,height=600');
+      if (w) {
+        w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + cssText + '</style></head><body>' + bodyHTML + '</body></html>');
+        w.document.close();
+        w.focus();
+        w.print();
+        setTimeout(() => w.close(), 1000);
+      }
+    }
+  }
+
+  // ─── KITCHEN ORDER TOKEN (KOT) ───
+  function printKOT(tableId) {
+    const order = orders[tableId];
+    if (!order || !order.items.length) { alert('No items in this order!'); return; }
+
+    const selected = order.items.filter(it => it.kotSelected !== false);
+    if (!selected.length) { alert('No items selected for KOT.\nPlease tick at least one item.'); return; }
+
+    const kotItems = selected.map(it => ({
+      ...it,
+      kotQty: it.qty - (it.kotSentQty || 0)
+    })).filter(it => it.kotQty > 0);
+
+    if (!kotItems.length) {
+      alert('No new items to send!\nAll selected items were already sent to kitchen.');
+      return;
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const kotNo = 'KOT-' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0') + String(now.getSeconds()).padStart(2,'0');
+
+    const itemRows = kotItems.map(it => {
+      const name = it.custom ? it.name : (MENU.find(m => m.id === it.id) || {}).name || it.id;
+      return `<tr>
+        <td style="padding:5px 4px; font-size:15px; font-weight:700; border-bottom:1px solid #eee;">${name}</td>
+        <td style="padding:5px 4px; font-size:18px; font-weight:900; text-align:right; border-bottom:1px solid #eee;">× ${it.kotQty}</td>
+      </tr>`;
+    }).join('');
+
+    const notes = order.notes ? `
+      <div style="margin-top:10px; padding:8px; border:2px dashed #999; font-size:13px;">
+        <strong>⚠ Note:</strong> ${order.notes}
+      </div>` : '';
+
+    const kotCSS = `
+      * { box-sizing: border-box; margin: 0; padding: 0; font-weight: 900; }
+      body { font-family: 'Courier New', Courier, monospace; width: 280px; padding: 12px 10px; color: #000; }
+      h1 { font-size: 16px; font-weight: 900; text-align: center; letter-spacing: 1px; }
+      .sub { font-size: 11px; text-align: center; color: #000; margin-bottom: 8px; }
+      .divider { border: none; border-top: 2px solid #000; margin: 8px 0; }
+      .divider-dash { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+      .meta { font-size: 11px; margin: 3px 0; display:flex; justify-content:space-between; }
+      .table-label { font-size: 18px; font-weight: 900; text-align: center; border: 3px solid #000; padding: 5px; margin: 8px 0; letter-spacing: 1px; }
+      table { width: 100%; border-collapse: collapse; }
+      .footer { font-size: 11px; text-align: center; margin-top: 12px; }
+    `;
+
+    const kotBody = `
+      <h1>🍳 KITCHEN ORDER TOKEN</h1>
+      <div class="sub">MAA GAYATRI RESTAURANT</div>
+      <hr class="divider">
+      <div class="meta"><span>KOT No:</span><span>${kotNo}</span></div>
+      <div class="meta"><span>Date:</span><span>${dateStr}</span></div>
+      <div class="meta"><span>Time:</span><span>${timeStr}</span></div>
+      <hr class="divider-dash">
+      <div class="table-label">${(TABLE_LABELS[tableId] || tableId).replace(/[📦🪑]/g,'').trim()}</div>
+      <hr class="divider">
+      <table>${itemRows}</table>
+      ${notes}
+      <hr class="divider" style="margin-top:12px">
+      <div class="footer">— Please prepare accordingly —</div>
+    `;
+
+    printViaIframe(kotBody, kotCSS);
+
+    orders[tableId].items.forEach(it => {
+      if (it.kotSelected !== false) {
+        it.kotSentQty = it.qty;
+        it.kotSelected = false;
+      }
+    });
+    renderOrderWindow(tableId);
+  }
+
+  // ─── BILL PRINTING ───
+  function printBill(tableId) {
+    const order = orders[tableId];
+    if (!order || !order.items.length) {
+      alert('No items in this order!'); return;
+    }
+    const subtotal = calcSubtotal(order);
+    const gstAmt = gstEnabled ? +(subtotal * GST_RATE / 100).toFixed(2) : 0;
+    const discount = parseFloat(order.discount || 0) || 0;
+    const total = Math.max(0, subtotal + gstAmt - discount);
+    const now = new Date();
+    const billNo = 'MG' + now.getFullYear().toString().slice(-2) +
+      String(now.getMonth()+1).padStart(2,'0') +
+      String(now.getDate()).padStart(2,'0') + '-' +
+      String(billCounter).padStart(4,'0');
+    const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+    const dateStr = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+
+    pendingClearId = tableId;
+
+    const itemRows = order.items.map(it => {
+      const name = it.custom ? it.name : (MENU.find(m => m.id === it.id) || {}).name || it.id;
+      const price = it.custom ? it.price : (MENU.find(m => m.id === it.id) || {}).price || 0;
+      const amt = price * it.qty;
+      return `<div class="r-row r-bold"><span>${name}</span><span></span></div>
+              <div class="r-row r-bold" style="padding-left:12px"><span style="font-size:14px;">${it.qty} × ₹${price}</span><span>₹${amt.toFixed(0)}</span></div>`;
+    }).join('');
+
+    const html = `
+      <div class="r-center r-bold" style="font-size:13px">MAA GAYATRI HOTEL &amp; RESTAURANT</div>
+      <div class="r-center r-bold">आपले आपूलकीचे ठिकाण</div>
+      <hr class="r-line">
+      <div class="r-row r-bold"><span>Bill No:</span><span>${billNo}</span></div>
+      <div class="r-row r-bold"><span>Date:</span><span>${dateStr} ${timeStr}</span></div>
+      <div class="r-row r-bold"><span>Type:</span><span>${TABLE_LABELS[tableId] || tableId}</span></div>
+      ${order.notes ? `<div class="r-bold" style="margin-top:3px">Note: ${order.notes}</div>` : ''}
+      <hr class="r-line">
+      <div class="r-row r-bold"><span>ITEM</span><span>AMT</span></div>
+      <hr class="r-line">
+      ${itemRows}
+      <hr class="r-line">
+      <div class="r-row r-bold"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
+      ${gstEnabled ? `<div class="r-row r-bold"><span>GST @ ${GST_RATE}%</span><span>₹${gstAmt.toFixed(2)}</span></div>` : ''}
+      ${discount > 0 ? `<div class="r-row r-bold"><span>Discount</span><span>-₹${discount.toFixed(2)}</span></div>` : ''}
+      <hr class="r-solid">
+      <div class="r-row r-bold r-total"><span>GRAND TOTAL</span><span>₹${total.toFixed(2)}</span></div>
+      <hr class="r-solid">
+      <div class="r-center r-bold" style="margin-top:6px">धन्यवाद! — पुन्हा भेटूया —</div>
+    `;
+
+    document.getElementById('receiptContent').innerHTML = html;
+    document.getElementById('printOverlay').classList.add('show');
+
+    pendingLogEntry = {
+      billNo, tableId, label: TABLE_LABELS[tableId] || tableId,
+      date: dateStr, time: timeStr,
+      items: order.items.map(it => {
+        const name = it.custom ? it.name : (MENU.find(m => m.id === it.id) || {}).name || it.id;
+        return `${name}(${it.qty})`;
+      }),
+      subtotal, gstAmt, discount, total, gstEnabled,
+      snapshot: JSON.parse(JSON.stringify(order.items)),
+      snapDiscount: discount,
+      snapNotes: order.notes || '',
+      timestamp: Date.now()
+    };
+  }
+
+  function doPrint() {
+    const receiptHTML = document.getElementById('receiptContent').innerHTML;
+    const css = `
+      body { font-family: 'Courier New', Courier, monospace; font-size: 15px; padding: 10px; width: 280px; }
+      .r-center { text-align: center; } .r-bold { font-weight: 800; }
+      .r-line { border: none; border-top: 1px dashed #999; margin: 6px 0; }
+      .r-solid { border: none; border-top: 2px solid #333; margin: 6px 0; }
+      .r-row { display: flex; justify-content: space-between; margin: 2px 0; }
+      .r-total { font-size: 18px; font-weight: 800; }
+    `;
+    printViaIframe(receiptHTML, css);
+
+    if (pendingLogEntry) {
+      pendingLogEntry.logIndex = salesLog.length;
+      salesLog.push(pendingLogEntry);
+      billCounter++;
+      broadcastSalesEvent('NEW_BILL', pendingLogEntry);
+      pendingLogEntry = null;
+      renderLog();
+    }
+
+    if (pendingClearId) {
+      if (pendingClearId.startsWith('edit_')) {
+        const editWin = document.getElementById('win-' + pendingClearId);
+        if (editWin) editWin.remove();
+        delete orders[pendingClearId];
+        const realKeys = Object.keys(orders).filter(k => !k.startsWith('edit_'));
+        if (realKeys.length === 0) document.getElementById('emptyState').style.display = '';
+      } else {
+        orders[pendingClearId] = { items: [], notes: '', minimized: false, discount: 0 };
+        renderOrderWindow(pendingClearId);
+        updateSidebarButton(pendingClearId);
+      }
+      pendingClearId = null;
+    }
+
+    saveState();
+    document.getElementById('printOverlay').classList.remove('show');
+  }
+
+  function closePrint() {
+    document.getElementById('printOverlay').classList.remove('show');
+    pendingLogEntry = null;
+    pendingClearId = null;
+  }
+
+  function updateSidebarButton(tableId) {
+    if (tableId.startsWith('edit_')) return;
+    const btn = document.getElementById('btn-' + tableId);
+    const sub = document.getElementById('sub-' + tableId);
+    const dot = document.getElementById('dot-' + tableId);
+    if (!btn || !sub) return;
+    const order = orders[tableId];
+    if (order && order.items && order.items.length > 0) {
+      const subtotal = calcSubtotal(order);
+      const gst = gstEnabled ? subtotal * GST_RATE / 100 : 0;
+      sub.textContent = `${order.items.length} item(s)  ₹${(subtotal + gst).toFixed(0)}`;
+      btn.classList.add('has-order');
+      if (dot) dot.style.background = 'var(--amber)';
+    } else {
+      sub.textContent = tableId === 'takeaway' ? 'सध्या ऑर्डर नाही' : 'Empty';
+      btn.classList.remove('has-order');
+      if (dot) dot.style.background = 'var(--border)';
+    }
+  }
+
+  // ─── SALES LOG OPERATIONS ───
+  function toggleLogPanel() {
+    const panel = document.getElementById('logPanel');
+    const btn = document.getElementById('logToggleBtn');
+    const collapsed = panel.classList.toggle('collapsed');
+    btn.textContent = collapsed ? '▶ आजचा सेल' : '◀';
+    btn.title = collapsed ? 'Expand log' : 'Collapse log';
+  }
+
+  function renderLog() {
+    const list = document.getElementById('logList');
+    if (!list) return;
+    const total = salesLog.reduce((s, e) => s + (e.total || 0), 0);
+    document.getElementById('logTotal').textContent = '₹' + total.toFixed(2);
+    document.getElementById('logCount').textContent = salesLog.length;
+
+    if (!salesLog.length) {
+      list.innerHTML = '<div style="text-align:center;color:#888;font-size:11px;padding:20px 0">No bills printed yet</div>';
+      return;
+    }
+
+    const rendered = [];
+    for (let i = salesLog.length - 1; i >= 0; i--) {
+      const e = salesLog[i];
+      const tableClass = e.tableId === 'takeaway' ? 'log-tag-takeaway' : 'log-tag-table';
+      const label = (e.label || '').replace(/[📦🪑]/g,'').trim();
+      const gstBadge = e.gstEnabled ? '<span class="log-tag log-tag-gst">+GST</span>' : '';
+      const editedBadge = e.edited ? '<span class="log-tag" style="background:rgba(74,157,98,0.15);color:var(--green);">✎ EDITED</span>' : '';
+      const hasSnap = e.snapshot ? '' : ' disabled title="Old bill"';
+      rendered.push(`
+        <div class="log-entry">
+          <div class="log-entry-header">
+            <span class="log-entry-id">${e.billNo}</span>
+            <span class="log-entry-total">₹${e.total.toFixed(2)}</span>
+          </div>
+          <div class="log-entry-meta">
+            <span class="log-tag ${tableClass}">${label}</span>
+            <span class="log-tag log-tag-time">${e.time}</span>
+            ${gstBadge} ${editedBadge}
+          </div>
+          <div class="log-entry-items">${(e.items || []).join(', ')}</div>
+          <div class="log-action-row">
+            <button class="log-action-btn" onclick="reprintFromLog(${i})">🖨 Reprint</button>
+            <button class="log-action-btn log-action-edit"${hasSnap} onclick="openEditOrder(${i})">✎ Edit &amp; Reprint</button>
+          </div>
+        </div>
+      `);
+    }
+    list.innerHTML = rendered.join('');
+  }
+
+  function buildReceiptFromEntry(e) {
+    const itemRows = (e.snapshot || []).map(it => {
+      const name = it.custom ? it.name : ((MENU.find(m => m.id === it.id) || {}).name || it.id);
+      const price = it.custom ? it.price : ((MENU.find(m => m.id === it.id) || {}).price || 0);
+      const amt = price * it.qty;
+      return `<div class="r-row r-bold"><span>${name}</span><span></span></div>
+              <div class="r-row r-bold" style="padding-left:12px"><span style="font-size:14px;">${it.qty} × ₹${price}</span><span>₹${amt.toFixed(0)}</span></div>`;
+    }).join('');
+
+    const gstLine = e.gstEnabled ? `<div class="r-row r-bold"><span>GST @ ${GST_RATE}%</span><span>₹${e.gstAmt.toFixed(2)}</span></div>` : '';
+    const discLine = (e.discount > 0) ? `<div class="r-row r-bold"><span>Discount</span><span>-₹${e.discount.toFixed(2)}</span></div>` : '';
+    const notesLine = e.snapNotes ? `<div class="r-bold" style="margin-top:3px">Note: ${e.snapNotes}</div>` : '';
+
+    return `
+      <div class="r-center r-bold" style="font-size:13px">MAA GAYATRI HOTEL &amp; RESTAURANT</div>
+      <div class="r-center r-bold">आपले आपूलकीचे ठिकाण</div>
+      <hr class="r-line">
+      <div class="r-row r-bold"><span>Bill No:</span><span>${e.billNo}</span></div>
+      <div class="r-row r-bold"><span>Date:</span><span>${e.date} ${e.time}</span></div>
+      <div class="r-row r-bold"><span>Type:</span><span>${e.label}</span></div>
+      ${notesLine}
+      <hr class="r-line">
+      <div class="r-row r-bold"><span>ITEM</span><span>AMT</span></div>
+      <hr class="r-line">
+      ${itemRows}
+      <hr class="r-line">
+      <div class="r-row r-bold"><span>Subtotal</span><span>₹${e.subtotal.toFixed(2)}</span></div>
+      ${gstLine} ${discLine}
+      <hr class="r-solid">
+      <div class="r-row r-bold r-total"><span>GRAND TOTAL</span><span>₹${e.total.toFixed(2)}</span></div>
+      <hr class="r-solid">
+      <div class="r-center r-bold" style="margin-top:6px">धन्यवाद! — पुन्हा भेटूया —</div>
+    `;
+  }
+
+  const _receiptCSS = 'body{font-family:"Courier New",monospace;font-size:15px;padding:10px;width:280px;}.r-center{text-align:center}.r-bold{font-weight:800}.r-line{border:none;border-top:1px dashed #999;margin:6px 0}.r-solid{border:none;border-top:2px solid #333;margin:6px 0}.r-row{display:flex;justify-content:space-between;margin:2px 0}.r-total{font-size:18px;font-weight:800}';
+
+  function reprintFromLog(logIdx) {
+    const e = salesLog[logIdx];
+    if (!e || !e.snapshot) { alert('No item snapshot available to reprint.'); return; }
+    const html = buildReceiptFromEntry(e);
+    printViaIframe(html, _receiptCSS);
+    showToast('🖨 Reprinting ' + e.billNo, 2000);
+
+    // Audit log event for reprint
+    const audit = {
+      action: 'REPRINT',
+      billNo: e.billNo,
+      date: new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }),
+      time: new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true }),
+      details: 'Reprinted at counter (informative only, no sales addition)',
+      delta: 0,
+      timestamp: Date.now()
+    };
+    broadcastSalesEvent('AUDIT', audit);
+  }
+
+  function openEditOrder(logIdx) {
+    const e = salesLog[logIdx];
+    if (!e || !e.snapshot) { alert('No item snapshot. Cannot edit.'); return; }
+    const editId = 'edit_' + logIdx;
+
+    orders[editId] = {
+      items: (e.snapshot || []).map(it => ({
+        id: it.id,
+        name: it.name,
+        price: it.price,
+        qty: it.qty,
+        custom: it.custom || false,
+        kotSelected: false,
+        kotSentQty: it.qty
+      })),
+      notes: e.snapNotes || '',
+      discount: e.discount || e.snapDiscount || 0,
+      minimized: false,
+      _editLogIdx: logIdx,
+      _originalBillNo: e.billNo
+    };
+
+    document.getElementById('emptyState').style.display = 'none';
+
+    Object.keys(orders).forEach(id => {
+      if (!id.startsWith('edit_') && orders[id]) {
+        orders[id].minimized = true;
+        renderOrderWindow(id);
+      }
+    });
+
+    renderOrderWindow(editId);
+    setActiveWindow(editId);
+    showToast(`✏️ Editing bill ${e.billNo} — make adjustments and Save & Reprint`);
+  }
+
+  function saveAndReprint(editId) {
+    const order = orders[editId];
+    if (!order || !order.items.length) { alert('No items in this order!'); return; }
+    const logIdx = order._editLogIdx;
+    const origEntry = salesLog[logIdx];
+    if (!origEntry) { alert('Original log entry not found.'); return; }
+
+    const subtotal = calcSubtotal(order);
+    const gstAmt = origEntry.gstEnabled ? +(subtotal * GST_RATE / 100).toFixed(2) : 0;
+    const discount = parseFloat(order.discount || 0) || 0;
+    const total = Math.max(0, subtotal + gstAmt - discount);
+
+    const oldTotal = Number(origEntry.total) || 0;
+    const delta = total - oldTotal;
+
+    const updatedEntry = {
+      billNo: origEntry.billNo,
+      tableId: origEntry.tableId,
+      label: origEntry.label,
+      date: origEntry.date,
+      time: origEntry.time,
+      gstEnabled: origEntry.gstEnabled,
+      logIndex: logIdx,
+      items: order.items.map(it => {
+        const name = it.custom ? it.name : ((MENU.find(m => m.id === it.id) || {}).name || it.id);
+        return name + '(' + it.qty + ')';
+      }),
+      subtotal, gstAmt, discount, total,
+      snapshot: JSON.parse(JSON.stringify(order.items)),
+      snapDiscount: discount,
+      snapNotes: order.notes || '',
+      edited: true,
+      timestamp: Date.now()
+    };
+
+    salesLog[logIdx] = updatedEntry;
+    saveState();
+    renderLog();
+
+    // Audit log event for edit
+    const audit = {
+      action: 'EDIT',
+      billNo: updatedEntry.billNo,
+      date: updatedEntry.date,
+      time: updatedEntry.time,
+      details: `Edited: was ₹${oldTotal.toFixed(2)}, now ₹${total.toFixed(2)} (${delta >= 0 ? '+' : ''}₹${delta.toFixed(2)})`,
+      oldTotal,
+      newTotal: total,
+      delta,
+      timestamp: Date.now()
+    };
+    broadcastSalesEvent('AUDIT', audit);
+    broadcastSalesEvent('EDIT_BILL', updatedEntry);
+
+    const receiptHTML = buildReceiptFromEntry(updatedEntry);
+    document.getElementById('receiptContent').innerHTML = receiptHTML;
+    document.getElementById('printOverlay').classList.add('show');
+
+    pendingClearId = editId;
+    pendingLogEntry = null;
+    showToast('✅ ' + origEntry.billNo + ' updated', 3000);
+  }
+
+  function exportLog() {
+    if (!salesLog.length) { alert('No sales to export yet.'); return; }
+    const rows = [['Bill No','Table','Date','Time','Subtotal','GST','Discount','Total','Items']];
+    salesLog.forEach(e => {
+      rows.push([
+        e.billNo, (e.label || '').replace(/[📦🪑]/g,'').trim(), e.date, e.time,
+        (e.subtotal || 0).toFixed(2), (e.gstAmt || 0).toFixed(2), (e.discount || 0).toFixed(2),
+        (e.total || 0).toFixed(2), (e.items || []).join(' | ')
+      ]);
+    });
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'maa_gayatri_sales_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function clearLog() {
+    if (confirm('Clear entire sales log? This will reset today\'s sales.')) {
+      salesLog = [];
+      // bill counter is NOT reset, so new bills never reuse a number already saved in the cloud
+      saveState();
+      renderLog();
+      showToast('🗑 Sales log cleared', 2500);
+    }
+  }
+
+  // ─── KEYBOARD SHORTCUTS (DESKTOP BILLING COUNTER) ───
+  const _KEY_MAP = {
+    '1':'table1','2':'table2','3':'table3','4':'table4','5':'table5',
+    '6':'table6','7':'table7','8':'table8','9':'table9','0':'table10',
+    '-':'table11','=':'table12','[':'table13',']':'table14','\\':'table15',
+    'p':'takeaway','q':'takeaway'
+  };
+
+  document.addEventListener('keydown', ev => {
+    const tag = (ev.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || ev.target.isContentEditable) return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (ev.key === 'Escape') {
+      if (document.getElementById('printOverlay').classList.contains('show')) {
+        closePrint();
+        return;
+      }
+    }
+    const tId = _KEY_MAP[ev.key] || _KEY_MAP[(ev.key || '').toLowerCase()];
+    if (tId) {
+      ev.preventDefault();
+      openOrder(tId);
+      const btn = document.getElementById('btn-' + tId);
+      if (btn) btn.scrollIntoView({ block: 'nearest' });
+      showToast('⌨ ' + (TABLE_LABELS[tId] || tId), 1200);
+    }
+  });
+
+  window.addEventListener('beforeunload', e => {
+    saveState();
+    const hasActiveOrders = Object.values(orders).some(o => o && o.items && o.items.length > 0);
+    if (hasActiveOrders) {
+      const msg = 'You have active table orders! Are you sure you want to leave?';
+      e.preventDefault();
+      e.returnValue = msg;
+      return msg;
+    }
+  });
+
+  function showToast(msg, duration = 3000) {
+    const existing = document.getElementById('mgToast');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.id = 'mgToast';
+    t.textContent = msg;
+    Object.assign(t.style, {
+      position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+      background: '#333333', color: 'white', padding: '10px 20px',
+      borderRadius: '100px', fontSize: '13px', fontWeight: '600',
+      zIndex: '99999', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+      fontFamily: 'inherit', whiteSpace: 'nowrap'
+    });
+    document.body.appendChild(t);
+    setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transition = 'opacity 0.4s';
+      setTimeout(() => t.remove(), 400);
+    }, duration);
+  }
+
+  // ─── INITIALIZATION ON LOAD ───
+  window.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    initCloud();
+    setupPWA();
+    const pill = document.getElementById('gstPill');
+    if (pill) pill.className = 'toggle-pill' + (gstEnabled ? ' on' : '');
+
+    const activeOrders = Object.keys(orders).filter(id => orders[id] && orders[id].items !== undefined);
+    if (activeOrders.length > 0) {
+      document.getElementById('emptyState').style.display = 'none';
+      activeOrders.forEach((tableId, i) => {
+        orders[tableId].minimized = i < activeOrders.length - 1;
+        renderOrderWindow(tableId);
+        updateSidebarButton(tableId);
+      });
+      const lastActive = activeOrders[activeOrders.length - 1];
+      setActiveWindow(lastActive);
+      updateMiniStrip();
+    }
+    if (salesLog.length > 0) renderLog();
+  });
+  </script>
+</body>
+</html>
