@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>MGHR Manager - Maa Gayatri Hotel And Restaurant</title>
-<link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#141414">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="theme-color" content="#D4A84B">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="MG POS">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MGHR Manage">
   <style>
     :root {
       --bg: #121212;
@@ -268,6 +266,59 @@
     .sync-banner.ok    { background: var(--green-dim); border-color: var(--green); color: var(--green); }
     .sync-banner.error { background: var(--red-dim);   border-color: var(--red);   color: #ff8a7d; }
 
+    /* ── STAFF MANAGEMENT ── */
+    .st-card {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px; margin-bottom: 10px; cursor: pointer;
+    }
+    .st-card.former { opacity: 0.6; }
+    .st-avatar {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber);
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px;
+    }
+    .st-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .st-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .st-chip {
+      display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 10px; font-weight: 700;
+      background: var(--bg3); color: var(--text3); border: 1px solid var(--border);
+    }
+    .st-chip.P { background: var(--green-dim); color: var(--green); border-color: var(--green); }
+    .st-chip.H { background: var(--amber-dim); color: var(--amber); border-color: var(--amber); }
+    .st-chip.A { background: var(--red-dim); color: #ff8a7d; border-color: var(--red); }
+    .st-chip.L { background: var(--blue-dim); color: var(--blue); border-color: var(--blue); }
+    .st-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .st-grid4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+    .att-row { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 10px; }
+    .att-btns { display: flex; gap: 6px; margin-top: 9px; }
+    .att-btn {
+      flex: 1; padding: 9px 2px; border-radius: var(--radius-sm); background: var(--bg3);
+      border: 1px solid var(--border); color: var(--text2); font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .att-btn.on.P { background: var(--green); border-color: var(--green); color: #fff; }
+    .att-btn.on.H { background: var(--amber); border-color: var(--amber); color: #111; }
+    .att-btn.on.A { background: var(--red); border-color: var(--red); color: #fff; }
+    .att-btn.on.L { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .st-counts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 10px 0; text-align: center; }
+    .st-counts div { background: var(--bg3); border-radius: 6px; padding: 6px 2px; font-size: 10px; color: var(--text3); }
+    .st-counts b { display: block; font-size: 15px; color: var(--text); }
+    .st-line { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); padding: 3px 0; }
+    .st-line.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-size: 14px; font-weight: 800; }
+    .st-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .st-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 300;
+      background: rgba(0,0,0,0.75); align-items: flex-end; justify-content: center;
+    }
+    .st-sheet {
+      background: var(--bg2); width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto;
+      border-radius: 16px 16px 0 0; padding: 16px 16px 24px; border: 1px solid var(--border);
+    }
+    .st-sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-weight: 800; color: var(--amber); font-size: 14px; }
+    .st-field { margin-bottom: 11px; }
+    .st-entries summary { font-size: 11px; color: var(--text3); cursor: pointer; margin-top: 10px; }
+    .st-entry { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 11px; color: var(--text2); padding: 6px 0; border-bottom: 1px solid var(--border); }
+
     /* ── TOAST ── */
     #manageToast {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
@@ -445,6 +496,24 @@
   </main>
 
   <!-- TAB 4: SETTINGS / FIREBASE SYNC -->
+  <main id="tabStaff" class="view-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;">
+      <span id="stHeadTitle" style="font-size:13px;font-weight:700;color:var(--amber);">STAFF MANAGEMENT</span>
+      <div style="display:flex;gap:6px;">
+        <button class="header-btn" id="stLangBtn" onclick="toggleStaffLang()">English</button>
+        <button class="header-btn" id="stAddBtn" onclick="openStaffForm()">+ Add Staff</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;">
+      <button class="pill-btn active" id="stSegTeam" onclick="staffSegment('team')">👥 Team</button>
+      <button class="pill-btn" id="stSegAtt" onclick="staffSegment('att')">✅ Attendance</button>
+      <button class="pill-btn" id="stSegPay" onclick="staffSegment('pay')">💰 Payroll</button>
+    </div>
+    <div id="stViewTeam"></div>
+    <div id="stViewAtt" style="display:none;"></div>
+    <div id="stViewPay" style="display:none;"></div>
+  </main>
+
   <main id="tabSettings" class="view-content">
     <div class="section-title">CLOUD (FIREBASE)</div>
     <div class="metric-card" style="margin-bottom:14px;">
@@ -484,6 +553,10 @@
     <button class="nav-item" onclick="switchTab('tabMenu', this)">
       <span class="nav-icon">🍽️</span>
       <span>Menu Edit</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('tabStaff', this)">
+      <span class="nav-icon">👥</span>
+      <span id="navStaffLbl">Staff</span>
     </button>
     <button class="nav-item" onclick="switchTab('tabSettings', this)">
       <span class="nav-icon">⚙️</span>
@@ -1042,6 +1115,7 @@
     if (tabId === 'tabSales') renderSalesLogList();
     if (tabId === 'tabMenu') renderMenuEditor();
     if (tabId === 'tabSettings') updateSettingsCounts();
+    if (tabId === 'tabStaff') renderStaffCurrent();
   }
 
   // ─── TOAST ───
@@ -1574,6 +1648,8 @@
 
     // Sync progress reported by the POS
     fbDb.doc('sync/state').onSnapshot(snap => { if (snap.exists) handleSyncState(snap.data()); }, cloudListenerError('sync'));
+
+    startStaffListeners();
   }
 
   // ─── SYNC WITH POS ───
@@ -1687,6 +1763,506 @@
     }
   }
 
+  // ═══════════════ STAFF MANAGEMENT (मराठी / English) ═══════════════
+  // Team (who works here) · Attendance (daily marks) · Payroll (monthly salary, advances, bonus, fines, payments)
+  // Saved on this phone first, then to Firebase (collections: staff, attendance, staffLedger).
+  const LS_STAFF = 'mghr_staff', LS_STAFF_ATT = 'mghr_staff_att', LS_STAFF_LEDGER = 'mghr_staff_ledger', LS_STAFF_LANG = 'mghr_staff_lang';
+  let staffList = [], staffAtt = {}, staffLedger = [];
+  let stSeg = 'team', stAttDate = '', stPayMonth = '';
+  let stLang = 'mr';                               // 'mr' = मराठी (default), 'en' = English
+
+  // English text → Marathi. Anything missing here simply shows in English.
+  const ST_MR = {
+    'Staff': 'कर्मचारी', 'STAFF MANAGEMENT': 'कर्मचारी व्यवस्थापन', '+ Add Staff': '+ कर्मचारी जोडा',
+    '👥 Team': '👥 टीम', '✅ Attendance': '✅ हजेरी', '💰 Payroll': '💰 पगार',
+    'Active staff': 'सक्रिय कर्मचारी', 'Present today': 'आज हजर', 'Monthly salaries': 'मासिक पगार',
+    'No staff added yet.': 'अजून कर्मचारी जोडलेले नाहीत.',
+    'Tap + Add Staff to add your first team member.': 'पहिला कर्मचारी जोडण्यासाठी "+ कर्मचारी जोडा" दाबा.',
+    'FORMER STAFF': 'माजी कर्मचारी', 'Left': 'सोडून गेले', 'Not marked': 'नोंद नाही',
+    'Present': 'हजर', 'Half day': 'अर्धा दिवस', 'Absent': 'गैरहजर', 'Paid leave': 'पगारी सुट्टी',
+    'Half': 'अर्धा', 'Leave': 'सुट्टी', 'Unmarked': 'नोंद नाही',
+    '/ day': '/ दिवस', '/ month': '/ महिना', 'joined': 'रुजू',
+    'Edit staff': 'कर्मचारी माहिती बदला', 'Add staff': 'कर्मचारी जोडा',
+    'Full name *': 'पूर्ण नाव *', 'e.g. Ramesh Kumar': 'उदा. रमेश पाटील',
+    'Role': 'कामाचे पद', 'Choose or type': 'निवडा किंवा लिहा', 'Phone': 'मोबाईल नंबर', 'Mobile number': 'मोबाईल नंबर',
+    'Pay type': 'पगाराचा प्रकार', 'Monthly salary': 'महिन्याचा पगार', 'Daily wage': 'रोजंदारी',
+    'Amount (₹)': 'रक्कम (₹)', 'per month / per day': 'महिना / दिवस',
+    'Joining date': 'रुजू झाल्याची तारीख', 'Duty shift': 'ड्युटी शिफ्ट',
+    'Full day': 'पूर्ण दिवस', 'Morning': 'सकाळ', 'Evening': 'संध्याकाळ', 'Night': 'रात्र',
+    'Status': 'स्थिती', 'Active': 'कामावर आहे', 'Left / stopped working': 'सोडून गेले / काम बंद',
+    'Last working day': 'शेवटचा कामाचा दिवस',
+    'Notes (address, ID, emergency contact…)': 'टिपा (पत्ता, ओळखपत्र, आपत्कालीन संपर्क…)',
+    'Save': 'जतन करा', '🗑 Delete': '🗑 हटवा',
+    'Cook / Chef': 'स्वयंपाकी / शेफ', 'Tandoor': 'तंदूर', 'Waiter': 'वेटर', 'Cashier': 'कॅशियर', 'Manager': 'मॅनेजर',
+    'Helper': 'मदतनीस', 'Cleaner': 'सफाई कर्मचारी', 'Delivery': 'डिलिव्हरी', 'Other': 'इतर',
+    '⚠️ Enter the staff name': '⚠️ कर्मचाऱ्याचे नाव लिहा',
+    '⚠️ Enter the salary / daily wage amount': '⚠️ पगार / रोजंदारीची रक्कम लिहा',
+    'Staff updated': 'कर्मचाऱ्याची माहिती बदलली', 'Staff added': 'कर्मचारी जोडला',
+    'This person has attendance / payment records — set Status to "Left" instead of deleting':
+      'या व्यक्तीच्या हजेरी / पगाराच्या नोंदी आहेत — हटवण्याऐवजी स्थिती "सोडून गेले" ठेवा',
+    'Delete {0}? This cannot be undone.': '{0} यांना हटवायचे? हे परत करता येणार नाही.',
+    '🗑 Staff deleted': '🗑 कर्मचारी हटवला',
+    'Today': 'आज', '✓ Mark everyone not yet marked as Present': '✓ नोंद नसलेल्या सर्वांना हजर करा',
+    'Everyone is already marked': 'सर्वांची नोंद आधीच झाली आहे', '✅ {0} marked present': '✅ {0} जण हजर केले',
+    'No active staff for this date. Add staff in the Team tab.': 'या तारखेसाठी सक्रिय कर्मचारी नाहीत. टीम मध्ये कर्मचारी जोडा.',
+    'This month': 'चालू महिना', 'Salary earned': 'कमावलेला पगार', 'Advances': 'उचल', 'Salary paid': 'दिलेला पगार', 'Still to pay': 'द्यायचे बाकी',
+    'present days × rate': 'हजर दिवस × दर', 'salary after absences': 'गैरहजेरी वजा पगार', 'Earned ({0})': 'कमाई ({0})',
+    '+ Bonus': '+ बोनस', '− Fines': '− दंड', '− Advances taken': '− घेतलेली उचल', '− Salary already paid': '− आधी दिलेला पगार',
+    'Balance due {0}': 'बाकी देणे {0}', 'Overpaid {0} (adjust next month)': 'जास्त दिले {0} (पुढच्या महिन्यात वजा करा)',
+    'Settled ✓': 'हिशोब पूर्ण ✓', '💵 Pay salary': '💵 पगार द्या', '+ Advance': '+ उचल', '+ Fine': '+ दंड',
+    'Entries this month ({0})': 'या महिन्यातील नोंदी ({0})', 'No staff on payroll for this month.': 'या महिन्यासाठी पगारात कोणीही नाही.',
+    '⬇ Download this month as CSV': '⬇ हा महिना CSV म्हणून डाउनलोड करा',
+    'Monthly staff: salary ÷ days in the month, reduced for Absent days and Half days (days not marked count as paid). Daily-wage staff: rate × Present days (Half day = half). Advances, bonus, fines and payments are counted in the month you choose when saving them.':
+      'महिन्याचा पगार असलेले कर्मचारी: पगार ÷ महिन्यातील दिवस, त्यातून गैरहजर दिवस व अर्धे दिवस वजा (नोंद नसलेले दिवस पगारी धरले जातात). रोजंदारी कर्मचारी: दर × हजर दिवस (अर्धा दिवस = निम्मा). उचल, बोनस, दंड व पगार तुम्ही जतन करताना निवडलेल्या महिन्यात मोजले जातात.',
+    'Advance given': 'उचल दिली', 'Bonus': 'बोनस', 'Fine / deduction': 'दंड / कपात', 'Salary payment': 'पगार दिला',
+    'Amount (₹) *': 'रक्कम (₹) *', 'Date given': 'तारीख', 'Counts for month': 'कोणत्या महिन्यासाठी',
+    'Note (optional)': 'टीप (ऐच्छिक)', 'e.g. cash, festival, broken glass': 'उदा. रोख, सण, काच फुटली',
+    '⚠️ Enter an amount': '⚠️ रक्कम लिहा', 'Delete this entry?': 'ही नोंद हटवायची?'
+  };
+  function stT(s) {
+    let out = (stLang === 'mr' && ST_MR[s]) ? ST_MR[s] : s;
+    for (let i = 1; i < arguments.length; i++) out = out.split('{' + (i - 1) + '}').join(arguments[i]);
+    return out;
+  }
+  function stApplyLang() {
+    const set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
+    set('navStaffLbl', stT('Staff'));
+    set('stHeadTitle', stT('STAFF MANAGEMENT'));
+    set('stAddBtn', stT('+ Add Staff'));
+    set('stSegTeam', stT('👥 Team'));
+    set('stSegAtt', stT('✅ Attendance'));
+    set('stSegPay', stT('💰 Payroll'));
+    set('stLangBtn', stLang === 'mr' ? 'English' : 'मराठी');
+  }
+  function toggleStaffLang() {
+    stLang = (stLang === 'mr') ? 'en' : 'mr';
+    try { localStorage.setItem(LS_STAFF_LANG, stLang); } catch (e) {}
+    stApplyLang();
+    stCloseModal();
+    renderStaffCurrent();
+  }
+
+  const ST_ROLES = ['Cook / Chef', 'Tandoor', 'Waiter', 'Cashier', 'Manager', 'Helper', 'Cleaner', 'Delivery', 'Other'];
+  const ST_SHIFTS = ['Full day', 'Morning', 'Evening', 'Night'];
+  const ATT_CODES = { P: 'Present', H: 'Half day', A: 'Absent', L: 'Paid leave' };
+  const LEDGER_TYPES = { advance: 'Advance given', bonus: 'Bonus', fine: 'Fine / deduction', salary: 'Salary payment' };
+
+  function stLocale() { return stLang === 'mr' ? 'mr-IN-u-nu-latn' : 'en-IN'; }
+  function stEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function stMoney(n) { n = Math.round(Number(n) || 0); return (n < 0 ? '-' : '') + '₹' + Math.abs(n).toLocaleString('en-IN'); }
+  function stId(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function stToday() { return getLocalDateKey(new Date()); }
+  function stParseKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
+  function stShiftDay(k, n) { const d = stParseKey(k); d.setDate(d.getDate() + n); return getLocalDateKey(d); }
+  function stShiftMonth(ym, n) { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+  function stMonthDays(ym) { const [y, m] = ym.split('-').map(Number); return new Date(y, m, 0).getDate(); }
+  function stMonthLabel(ym) { const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString(stLocale(), { month: 'long', year: 'numeric' }); }
+  function stDateLabel(k) { return stParseKey(k).toLocaleDateString(stLocale(), { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }); }
+  function stShortDate(k) { return k ? stParseKey(k).toLocaleDateString(stLocale(), { day: '2-digit', month: 'short', year: 'numeric' }) : ''; }
+  function stMarksOf(key) { return (staffAtt[key] && staffAtt[key].marks) || {}; }
+
+  function loadStaffData() {
+    try {
+      staffList = JSON.parse(localStorage.getItem(LS_STAFF)) || [];
+      staffAtt = JSON.parse(localStorage.getItem(LS_STAFF_ATT)) || {};
+      staffLedger = JSON.parse(localStorage.getItem(LS_STAFF_LEDGER)) || [];
+      stLang = localStorage.getItem(LS_STAFF_LANG) === 'en' ? 'en' : 'mr';
+    } catch (e) { console.warn('staff load failed', e); }
+    stAttDate = stToday();
+    stPayMonth = stToday().slice(0, 7);
+    stApplyLang();
+  }
+  function saveStaffLocal() {
+    try {
+      localStorage.setItem(LS_STAFF, JSON.stringify(staffList));
+      localStorage.setItem(LS_STAFF_ATT, JSON.stringify(staffAtt));
+      localStorage.setItem(LS_STAFF_LEDGER, JSON.stringify(staffLedger));
+    } catch (e) { console.warn('staff save failed', e); }
+  }
+
+  // ── cloud ──
+  function stCloudOn() { return !!(fbDb && fbAuth && fbAuth.currentUser); }
+  function stCloudSet(coll, id, data, merge) {
+    if (!stCloudOn()) return;
+    const ref = fbDb.collection(coll).doc(id);
+    (merge ? ref.set(data, { merge: true }) : ref.set(data)).catch(e => console.warn('staff cloud set', e));
+  }
+  function stCloudDelete(coll, id) {
+    if (!stCloudOn()) return;
+    fbDb.collection(coll).doc(id).delete().catch(e => console.warn('staff cloud delete', e));
+  }
+
+  function startStaffListeners() {
+    if (!fbDb) return;
+    fbDb.collection('staff').onSnapshot(snap => {
+      if (snap.metadata.fromCache && snap.empty) return;       // don't wipe the phone copy while offline
+      staffList = snap.docs.map(d => d.data());
+      saveStaffLocal(); renderStaffCurrent();
+    }, cloudListenerError('staff'));
+
+    const since = stShiftDay(stToday(), -400);
+    fbDb.collection('attendance').where('date', '>=', since).onSnapshot(snap => {
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'removed') delete staffAtt[ch.doc.id];
+        else staffAtt[ch.doc.id] = ch.doc.data();
+      });
+      saveStaffLocal(); renderStaffCurrent();
+    }, cloudListenerError('attendance'));
+
+    fbDb.collection('staffLedger').onSnapshot(snap => {
+      if (snap.metadata.fromCache && snap.empty) return;
+      staffLedger = snap.docs.map(d => d.data());
+      saveStaffLocal(); renderStaffCurrent();
+    }, cloudListenerError('staff payments'));
+  }
+
+  // ── pay maths ──
+  function stEmployedOn(s, key) {
+    return (!s.joinDate || key >= s.joinDate) && (!(s.status === 'left' && s.lastDay) || key <= s.lastDay);
+  }
+  function stInPayroll(s, ym) {
+    const first = ym + '-01', last = ym + '-' + String(stMonthDays(ym)).padStart(2, '0');
+    if (s.joinDate && s.joinDate > last) return false;
+    if (s.status === 'left' && s.lastDay && s.lastDay < first) {
+      return staffLedger.some(e => e.staffId === s.id && e.month === ym);
+    }
+    return true;
+  }
+  // Monthly staff: salary ÷ days in month, minus absent days and half-days (unmarked days count as paid).
+  // Daily-wage staff: rate × present days (+ half for half-days).
+  function staffMonthStats(s, ym) {
+    const days = stMonthDays(ym);
+    let P = 0, H = 0, A = 0, L = 0, emp = 0;
+    for (let d = 1; d <= days; d++) {
+      const key = ym + '-' + String(d).padStart(2, '0');
+      if (!stEmployedOn(s, key)) continue;
+      emp++;
+      const c = stMarksOf(key)[s.id];
+      if (c === 'P') P++; else if (c === 'H') H++; else if (c === 'A') A++; else if (c === 'L') L++;
+    }
+    const rate = Number(s.rate) || 0;
+    const earned = Math.round(s.payType === 'daily'
+      ? rate * (P + 0.5 * H)
+      : rate * Math.max(0, emp - A - 0.5 * H) / days);
+    const led = { advance: 0, bonus: 0, fine: 0, salary: 0 };
+    staffLedger.forEach(e => { if (e.staffId === s.id && e.month === ym && led[e.type] !== undefined) led[e.type] += Number(e.amount) || 0; });
+    return Object.assign({ days, emp, P, H, A, L, unmarked: emp - P - H - A - L, earned }, led,
+      { due: earned + led.bonus - led.fine - led.advance - led.salary });
+  }
+
+  // ── segments ──
+  function staffSegment(seg) {
+    stSeg = seg;
+    [['team', 'Team'], ['att', 'Att'], ['pay', 'Pay']].forEach(([k, n]) => {
+      document.getElementById('stView' + n).style.display = (k === seg) ? '' : 'none';
+      document.getElementById('stSeg' + n).classList.toggle('active', k === seg);
+    });
+    renderStaffCurrent();
+  }
+  function renderStaffCurrent() {
+    const tab = document.getElementById('tabStaff');
+    if (!tab || !tab.classList.contains('active')) return;
+    if (stSeg === 'team') renderStaffTeam();
+    else if (stSeg === 'att') renderStaffAtt();
+    else renderStaffPay();
+  }
+
+  // ── modal ──
+  function stOpenModal(title, bodyHtml) {
+    let o = document.getElementById('stModal');
+    if (!o) {
+      o = document.createElement('div');
+      o.id = 'stModal'; o.className = 'st-overlay';
+      o.addEventListener('click', e => { if (e.target === o) stCloseModal(); });
+      document.body.appendChild(o);
+    }
+    o.innerHTML = '<div class="st-sheet"><div class="st-sheet-head"><span>' + title + '</span><button class="header-btn" onclick="stCloseModal()">✕</button></div>' + bodyHtml + '</div>';
+    o.style.display = 'flex';
+  }
+  function stCloseModal() { const o = document.getElementById('stModal'); if (o) o.style.display = 'none'; }
+
+  // ════════ TEAM ════════
+  function renderStaffTeam() {
+    const el = document.getElementById('stViewTeam');
+    const today = stToday(), marks = stMarksOf(today);
+    const byName = (a, b) => a.name.localeCompare(b.name);
+    const active = staffList.filter(s => s.status !== 'left').sort(byName);
+    const former = staffList.filter(s => s.status === 'left').sort(byName);
+    const present = active.filter(s => marks[s.id] === 'P' || marks[s.id] === 'H').length;
+    const base = active.filter(s => s.payType !== 'daily').reduce((n, s) => n + (Number(s.rate) || 0), 0);
+
+    const card = s => {
+      const c = marks[s.id];
+      const pay = stMoney(s.rate) + ' ' + stT(s.payType === 'daily' ? '/ day' : '/ month');
+      return '<div class="st-card' + (s.status === 'left' ? ' former' : '') + '" onclick="openStaffForm(\'' + s.id + '\')">' +
+        '<div class="st-avatar">' + stEsc((s.name || '?').trim().charAt(0).toUpperCase()) + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="st-name">' + stEsc(s.name) + '</div>' +
+          '<div class="st-sub">' + stEsc(stT(s.role || 'Staff')) + ' · ' + stEsc(stT(s.shift || '')) + '</div>' +
+          '<div class="st-sub">' + pay + (s.joinDate ? ' · ' + stT('joined') + ' ' + stShortDate(s.joinDate) : '') + '</div>' +
+        '</div>' +
+        '<div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">' +
+          (s.status === 'left' ? '<span class="st-chip">' + stT('Left') + '</span>' : '<span class="st-chip ' + (c || '') + '">' + (c ? stT(ATT_CODES[c]) : stT('Not marked')) + '</span>') +
+          (s.phone ? '<a href="tel:' + stEsc(s.phone) + '" onclick="event.stopPropagation()" style="font-size:16px;text-decoration:none;">📞</a>' : '') +
+        '</div></div>';
+    };
+
+    el.innerHTML =
+      '<div class="st-grid3">' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Active staff') + '</div><div class="metric-value">' + active.length + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Present today') + '</div><div class="metric-value">' + present + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Monthly salaries') + '</div><div class="metric-value" style="font-size:15px;">' + stMoney(base) + '</div></div>' +
+      '</div>' +
+      (active.length ? active.map(card).join('') :
+        '<div class="metric-card" style="text-align:center;color:var(--text3);font-size:13px;">' + stT('No staff added yet.') + '<br>' + stT('Tap + Add Staff to add your first team member.') + '</div>') +
+      (former.length ? '<div class="section-title" style="margin-top:16px;">' + stT('FORMER STAFF') + '</div>' + former.map(card).join('') : '');
+  }
+
+  function openStaffForm(id) {
+    const s = id ? staffList.find(x => x.id === id) : null;
+    const v = s || { name: '', role: '', phone: '', joinDate: stToday(), payType: 'monthly', rate: '', shift: 'Full day', status: 'active', lastDay: '', notes: '' };
+    const shiftOpts = ST_SHIFTS.map(o => '<option value="' + o + '"' + (o === v.shift ? ' selected' : '') + '>' + stT(o) + '</option>').join('');
+    stOpenModal(stT(s ? 'Edit staff' : 'Add staff'),
+      '<div class="st-field"><label class="form-label">' + stT('Full name *') + '</label><input id="sfName" class="form-input" value="' + stEsc(v.name) + '" placeholder="' + stT('e.g. Ramesh Kumar') + '"></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Role') + '</label><input id="sfRole" class="form-input" list="sfRoles" value="' + stEsc(stT(v.role)) + '" placeholder="' + stT('Choose or type') + '"><datalist id="sfRoles">' + ST_ROLES.map(r => '<option value="' + stEsc(stT(r)) + '">').join('') + '</datalist></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Phone') + '</label><input id="sfPhone" class="form-input" type="tel" value="' + stEsc(v.phone) + '" placeholder="' + stT('Mobile number') + '"></div>' +
+      '<div style="display:flex;gap:10px;"><div class="st-field" style="flex:1;"><label class="form-label">' + stT('Pay type') + '</label><select id="sfType" class="form-input">' +
+        '<option value="monthly"' + (v.payType !== 'daily' ? ' selected' : '') + '>' + stT('Monthly salary') + '</option><option value="daily"' + (v.payType === 'daily' ? ' selected' : '') + '>' + stT('Daily wage') + '</option></select></div>' +
+      '<div class="st-field" style="flex:1;"><label class="form-label">' + stT('Amount (₹)') + '</label><input id="sfRate" class="form-input" type="number" inputmode="decimal" min="0" value="' + stEsc(v.rate) + '" placeholder="' + stT('per month / per day') + '"></div></div>' +
+      '<div style="display:flex;gap:10px;"><div class="st-field" style="flex:1;"><label class="form-label">' + stT('Joining date') + '</label><input id="sfJoin" class="form-input" type="date" value="' + stEsc(v.joinDate) + '"></div>' +
+      '<div class="st-field" style="flex:1;"><label class="form-label">' + stT('Duty shift') + '</label><select id="sfShift" class="form-input">' + shiftOpts + '</select></div></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Status') + '</label><select id="sfStatus" class="form-input" onchange="document.getElementById(\'sfLastWrap\').style.display = this.value === \'left\' ? \'\' : \'none\'">' +
+        '<option value="active"' + (v.status !== 'left' ? ' selected' : '') + '>' + stT('Active') + '</option><option value="left"' + (v.status === 'left' ? ' selected' : '') + '>' + stT('Left / stopped working') + '</option></select></div>' +
+      '<div class="st-field" id="sfLastWrap" style="' + (v.status === 'left' ? '' : 'display:none;') + '"><label class="form-label">' + stT('Last working day') + '</label><input id="sfLast" class="form-input" type="date" value="' + stEsc(v.lastDay) + '"></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Notes (address, ID, emergency contact…)') + '</label><textarea id="sfNotes" class="form-input" rows="2">' + stEsc(v.notes) + '</textarea></div>' +
+      '<div style="display:flex;gap:8px;margin-top:6px;">' +
+        '<button class="login-btn" style="flex:1;" onclick="saveStaffForm(' + (s ? '\'' + s.id + '\'' : 'null') + ')">' + stT('Save') + '</button>' +
+        (s ? '<button class="header-btn" style="padding:0 14px;color:#ff8a7d;" onclick="deleteStaff(\'' + s.id + '\')">' + stT('🗑 Delete') + '</button>' : '') +
+      '</div>');
+  }
+
+  function saveStaffForm(id) {
+    const name = document.getElementById('sfName').value.trim();
+    const rate = parseFloat(document.getElementById('sfRate').value);
+    if (!name) { showToast(stT('⚠️ Enter the staff name')); return; }
+    if (!isFinite(rate) || rate < 0) { showToast(stT('⚠️ Enter the salary / daily wage amount')); return; }
+    const status = document.getElementById('sfStatus').value;
+    const old = id ? staffList.find(x => x.id === id) : null;
+    const s = {
+      id: old ? old.id : stId('s'),
+      name,
+      role: document.getElementById('sfRole').value.trim(),
+      phone: document.getElementById('sfPhone').value.trim(),
+      payType: document.getElementById('sfType').value,
+      rate,
+      joinDate: document.getElementById('sfJoin').value,
+      shift: document.getElementById('sfShift').value,
+      status,
+      lastDay: status === 'left' ? (document.getElementById('sfLast').value || stToday()) : '',
+      notes: document.getElementById('sfNotes').value.trim(),
+      createdAt: old ? (old.createdAt || Date.now()) : Date.now(),
+      updatedAt: Date.now()
+    };
+    if (old) staffList[staffList.indexOf(old)] = s; else staffList.push(s);
+    saveStaffLocal();
+    stCloudSet('staff', s.id, s);
+    stCloseModal();
+    renderStaffCurrent();
+    showToast('✅ ' + stT(old ? 'Staff updated' : 'Staff added') + ': ' + name);
+  }
+
+  function deleteStaff(id) {
+    const s = staffList.find(x => x.id === id);
+    if (!s) return;
+    const hasAtt = Object.keys(staffAtt).some(k => stMarksOf(k)[id]);
+    const hasPay = staffLedger.some(e => e.staffId === id);
+    if (hasAtt || hasPay) {
+      showToast(stT('This person has attendance / payment records — set Status to "Left" instead of deleting'), 5000);
+      return;
+    }
+    if (!confirm(stT('Delete {0}? This cannot be undone.', s.name))) return;
+    staffList = staffList.filter(x => x.id !== id);
+    saveStaffLocal();
+    stCloudDelete('staff', id);
+    stCloseModal();
+    renderStaffCurrent();
+    showToast(stT('🗑 Staff deleted'));
+  }
+
+  // ════════ ATTENDANCE ════════
+  function setAttDate(k) { if (k) { stAttDate = k; renderStaffAtt(); } }
+
+  function markAtt(staffId, code) {
+    const date = stAttDate;
+    const cur = stMarksOf(date)[staffId];
+    const next = (cur === code) ? null : code;            // tap the same button again to clear
+    if (!staffAtt[date]) staffAtt[date] = { date, marks: {} };
+    if (next) staffAtt[date].marks[staffId] = next; else delete staffAtt[date].marks[staffId];
+    staffAtt[date].updatedAt = Date.now();
+    saveStaffLocal();
+    if (stCloudOn()) {
+      const FV = firebase.firestore.FieldValue;
+      stCloudSet('attendance', date, { date, marks: { [staffId]: next ? next : FV.delete() }, updatedAt: Date.now() }, true);
+    }
+    renderStaffAtt();
+  }
+
+  function markAllPresent() {
+    const date = stAttDate, marks = stMarksOf(date);
+    const todo = staffList.filter(s => s.status !== 'left' && stEmployedOn(s, date) && !marks[s.id]);
+    if (!todo.length) { showToast(stT('Everyone is already marked')); return; }
+    if (!staffAtt[date]) staffAtt[date] = { date, marks: {} };
+    const add = {};
+    todo.forEach(s => { staffAtt[date].marks[s.id] = 'P'; add[s.id] = 'P'; });
+    staffAtt[date].updatedAt = Date.now();
+    saveStaffLocal();
+    stCloudSet('attendance', date, { date, marks: add, updatedAt: Date.now() }, true);
+    renderStaffAtt();
+    showToast(stT('✅ {0} marked present', todo.length));
+  }
+
+  function renderStaffAtt() {
+    const el = document.getElementById('stViewAtt');
+    const date = stAttDate, marks = stMarksOf(date);
+    const list = staffList.filter(s => s.status !== 'left' && stEmployedOn(s, date)).sort((a, b) => a.name.localeCompare(b.name));
+    const cnt = { P: 0, H: 0, A: 0, L: 0 };
+    list.forEach(s => { if (marks[s.id]) cnt[marks[s.id]]++; });
+    const notMarked = list.length - cnt.P - cnt.H - cnt.A - cnt.L;
+
+    el.innerHTML =
+      '<div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;">' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setAttDate(stShiftDay(stAttDate,-1))">◀</button>' +
+        '<input type="date" class="form-input" style="flex:1;padding:9px;" value="' + date + '" onchange="setAttDate(this.value)">' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setAttDate(stShiftDay(stAttDate,1))">▶</button>' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setAttDate(stToday())">' + stT('Today') + '</button>' +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--text3);margin-bottom:10px;">' + stDateLabel(date) + '</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">' +
+        '<span class="st-chip P">' + stT('Present') + ' ' + cnt.P + '</span><span class="st-chip H">' + stT('Half') + ' ' + cnt.H + '</span>' +
+        '<span class="st-chip A">' + stT('Absent') + ' ' + cnt.A + '</span><span class="st-chip L">' + stT('Leave') + ' ' + cnt.L + '</span>' +
+        '<span class="st-chip">' + stT('Not marked') + ' ' + notMarked + '</span></div>' +
+      (list.length ? '<button class="login-btn" style="margin-bottom:12px;" onclick="markAllPresent()">' + stT('✓ Mark everyone not yet marked as Present') + '</button>' : '') +
+      (list.length ? list.map(s => {
+        const cur = marks[s.id];
+        return '<div class="att-row"><div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<div><div class="st-name" style="font-size:14px;">' + stEsc(s.name) + '</div><div class="st-sub">' + stEsc(stT(s.role || 'Staff')) + ' · ' + stEsc(stT(s.shift || '')) + '</div></div>' +
+          '<span class="st-chip ' + (cur || '') + '">' + (cur ? stT(ATT_CODES[cur]) : stT('Not marked')) + '</span></div>' +
+          '<div class="att-btns">' + Object.keys(ATT_CODES).map(c =>
+            '<button class="att-btn' + (cur === c ? ' on ' + c : '') + '" onclick="markAtt(\'' + s.id + '\',\'' + c + '\')">' + stT(ATT_CODES[c]) + '</button>').join('') +
+          '</div></div>';
+      }).join('') : '<div class="metric-card" style="text-align:center;color:var(--text3);font-size:13px;">' + stT('No active staff for this date. Add staff in the Team tab.') + '</div>');
+  }
+
+  // ════════ PAYROLL ════════
+  function setPayMonth(ym) { if (ym) { stPayMonth = ym; renderStaffPay(); } }
+
+  function renderStaffPay() {
+    const el = document.getElementById('stViewPay');
+    const ym = stPayMonth;
+    const rows = staffList.filter(s => stInPayroll(s, ym)).sort((a, b) => a.name.localeCompare(b.name))
+      .map(s => ({ s, st: staffMonthStats(s, ym) }));
+    const sum = k => rows.reduce((n, r) => n + r.st[k], 0);
+    const toPay = rows.reduce((n, r) => n + Math.max(0, r.st.due), 0);
+
+    const card = ({ s, st }) => {
+      const entries = staffLedger.filter(e => e.staffId === s.id && e.month === ym).sort((a, b) => (a.date < b.date ? 1 : -1));
+      const dueClass = st.due > 0 ? 'var(--amber)' : (st.due < 0 ? '#ff8a7d' : 'var(--green)');
+      const dueText = st.due > 0 ? stT('Balance due {0}', stMoney(st.due)) : (st.due < 0 ? stT('Overpaid {0} (adjust next month)', stMoney(-st.due)) : stT('Settled ✓'));
+      return '<div class="metric-card" style="margin-bottom:12px;text-align:left;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="st-name">' + stEsc(s.name) + '</div>' +
+        '<div class="st-sub">' + stEsc(stT(s.role || 'Staff')) + ' · ' + stMoney(s.rate) + ' ' + stT(s.payType === 'daily' ? '/ day' : '/ month') + '</div></div>' +
+        (s.status === 'left' ? '<span class="st-chip">' + stT('Left') + '</span>' : '') + '</div>' +
+        '<div class="st-counts"><div><b>' + st.P + '</b>' + stT('Present') + '</div><div><b>' + st.H + '</b>' + stT('Half') + '</div><div><b>' + st.A + '</b>' + stT('Absent') + '</div><div><b>' + st.L + '</b>' + stT('Leave') + '</div><div><b>' + st.unmarked + '</b>' + stT('Unmarked') + '</div></div>' +
+        '<div class="st-line"><span>' + stT('Earned ({0})', stT(s.payType === 'daily' ? 'present days × rate' : 'salary after absences')) + '</span><span>' + stMoney(st.earned) + '</span></div>' +
+        (st.bonus ? '<div class="st-line"><span>' + stT('+ Bonus') + '</span><span>' + stMoney(st.bonus) + '</span></div>' : '') +
+        (st.fine ? '<div class="st-line"><span>' + stT('− Fines') + '</span><span>' + stMoney(st.fine) + '</span></div>' : '') +
+        (st.advance ? '<div class="st-line"><span>' + stT('− Advances taken') + '</span><span>' + stMoney(st.advance) + '</span></div>' : '') +
+        (st.salary ? '<div class="st-line"><span>' + stT('− Salary already paid') + '</span><span>' + stMoney(st.salary) + '</span></div>' : '') +
+        '<div class="st-line total" style="color:' + dueClass + ';"><span>' + dueText + '</span></div>' +
+        '<div class="st-actions">' +
+          '<button class="header-btn" onclick="openLedgerForm(\'' + s.id + '\',\'salary\')">' + stT('💵 Pay salary') + '</button>' +
+          '<button class="header-btn" onclick="openLedgerForm(\'' + s.id + '\',\'advance\')">' + stT('+ Advance') + '</button>' +
+          '<button class="header-btn" onclick="openLedgerForm(\'' + s.id + '\',\'bonus\')">' + stT('+ Bonus') + '</button>' +
+          '<button class="header-btn" onclick="openLedgerForm(\'' + s.id + '\',\'fine\')">' + stT('+ Fine') + '</button></div>' +
+        (entries.length ? '<details class="st-entries"><summary>' + stT('Entries this month ({0})', entries.length) + '</summary>' + entries.map(e =>
+          '<div class="st-entry"><span>' + stT(LEDGER_TYPES[e.type]) + ' · ' + stShortDate(e.date) + (e.note ? ' · ' + stEsc(e.note) : '') + '</span>' +
+          '<span style="display:flex;gap:8px;align-items:center;"><b>' + stMoney(e.amount) + '</b><button class="header-btn" style="padding:3px 8px;" onclick="deleteLedger(\'' + e.id + '\')">✕</button></span></div>').join('') + '</details>' : '') +
+        '</div>';
+    };
+
+    el.innerHTML =
+      '<div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;">' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setPayMonth(stShiftMonth(stPayMonth,-1))">◀</button>' +
+        '<div style="flex:1;text-align:center;font-weight:800;font-size:14px;color:var(--amber);">' + stMonthLabel(ym) + '</div>' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setPayMonth(stShiftMonth(stPayMonth,1))">▶</button>' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setPayMonth(stToday().slice(0,7))">' + stT('This month') + '</button>' +
+      '</div>' +
+      '<div class="st-grid4">' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Salary earned') + '</div><div class="metric-value" style="font-size:18px;">' + stMoney(sum('earned')) + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Advances') + '</div><div class="metric-value" style="font-size:18px;">' + stMoney(sum('advance')) + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Salary paid') + '</div><div class="metric-value" style="font-size:18px;">' + stMoney(sum('salary')) + '</div></div>' +
+        '<div class="metric-card highlight"><div class="metric-label">' + stT('Still to pay') + '</div><div class="metric-value" style="font-size:18px;">' + stMoney(toPay) + '</div></div>' +
+      '</div>' +
+      (rows.length ? rows.map(card).join('') : '<div class="metric-card" style="text-align:center;color:var(--text3);font-size:13px;">' + stT('No staff on payroll for this month.') + '</div>') +
+      (rows.length ? '<button class="header-btn" style="width:100%;padding:11px;margin-top:4px;" onclick="downloadPayrollCsv()">' + stT('⬇ Download this month as CSV') + '</button>' : '') +
+      '<p style="font-size:11px;color:var(--text3);margin-top:12px;line-height:1.5;">' + stT('Monthly staff: salary ÷ days in the month, reduced for Absent days and Half days (days not marked count as paid). Daily-wage staff: rate × Present days (Half day = half). Advances, bonus, fines and payments are counted in the month you choose when saving them.') + '</p>';
+  }
+
+  function openLedgerForm(staffId, type) {
+    const s = staffList.find(x => x.id === staffId);
+    if (!s) return;
+    const st = staffMonthStats(s, stPayMonth);
+    const prefill = (type === 'salary' && st.due > 0) ? st.due : '';
+    stOpenModal(stT(LEDGER_TYPES[type]) + ' — ' + stEsc(s.name),
+      '<div class="st-field"><label class="form-label">' + stT('Amount (₹) *') + '</label><input id="lfAmount" class="form-input" type="number" inputmode="decimal" min="0" value="' + prefill + '" placeholder="0"></div>' +
+      '<div style="display:flex;gap:10px;"><div class="st-field" style="flex:1;"><label class="form-label">' + stT('Date given') + '</label><input id="lfDate" class="form-input" type="date" value="' + stToday() + '"></div>' +
+      '<div class="st-field" style="flex:1;"><label class="form-label">' + stT('Counts for month') + '</label><input id="lfMonth" class="form-input" type="month" value="' + stPayMonth + '"></div></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Note (optional)') + '</label><input id="lfNote" class="form-input" placeholder="' + stT('e.g. cash, festival, broken glass') + '"></div>' +
+      '<button class="login-btn" onclick="saveLedger(\'' + staffId + '\',\'' + type + '\')">' + stT('Save') + '</button>');
+  }
+
+  function saveLedger(staffId, type) {
+    const amount = parseFloat(document.getElementById('lfAmount').value);
+    if (!isFinite(amount) || amount <= 0) { showToast(stT('⚠️ Enter an amount')); return; }
+    const e = {
+      id: stId('l'), staffId, type, amount,
+      date: document.getElementById('lfDate').value || stToday(),
+      month: document.getElementById('lfMonth').value || stPayMonth,
+      note: document.getElementById('lfNote').value.trim(),
+      updatedAt: Date.now()
+    };
+    staffLedger.push(e);
+    saveStaffLocal();
+    stCloudSet('staffLedger', e.id, e);
+    stCloseModal();
+    renderStaffCurrent();
+    showToast('✅ ' + stT(LEDGER_TYPES[type]) + ': ' + stMoney(amount));
+  }
+
+  function deleteLedger(id) {
+    if (!confirm(stT('Delete this entry?'))) return;
+    staffLedger = staffLedger.filter(e => e.id !== id);
+    saveStaffLocal();
+    stCloudDelete('staffLedger', id);
+    renderStaffCurrent();
+  }
+
+  function downloadPayrollCsv() {
+    const ym = stPayMonth;
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = [['Staff', 'Role', 'Pay type', 'Rate', 'Present', 'Half', 'Absent', 'Leave', 'Earned', 'Bonus', 'Fine', 'Advance', 'Salary paid', 'Balance due'].join(',')];
+    staffList.filter(s => stInPayroll(s, ym)).sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
+      const t = staffMonthStats(s, ym);
+      lines.push([q(s.name), q(s.role), s.payType, s.rate, t.P, t.H, t.A, t.L, t.earned, t.bonus, t.fine, t.advance, t.salary, t.due].join(','));
+    });
+    const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'MGHR-payroll-' + ym + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
   // ─── SETTINGS ACTIONS ───
   function clearAllCachedData() {
     if (confirm('Clear local memory cache? (You can re-sync anytime)')) {
@@ -1718,6 +2294,7 @@
   // ─── INITIALIZE ───
   function initApp() {
     loadLocalData();
+    loadStaffData();
     updateDashboardMetrics();
     renderSalesLogList();
     startCloudListeners();
