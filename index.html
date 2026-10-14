@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>MGHR Manager - Maa Gayatri Hotel And Restaurant</title>
   <meta name="theme-color" content="#D4A84B">
+<link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#141414">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="MGHR Manage">
+  <meta name="apple-mobile-web-app-title" content="MG POS">
   <style>
     :root {
       --bg: #121212;
@@ -300,7 +303,7 @@
     .att-btn.on.H { background: var(--amber); border-color: var(--amber); color: #111; }
     .att-btn.on.A { background: var(--red); border-color: var(--red); color: #fff; }
     .att-btn.on.L { background: var(--blue); border-color: var(--blue); color: #fff; }
-    .st-counts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 10px 0; text-align: center; }
+    .st-counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 10px 0; text-align: center; }
     .st-counts div { background: var(--bg3); border-radius: 6px; padding: 6px 2px; font-size: 10px; color: var(--text3); }
     .st-counts b { display: block; font-size: 15px; color: var(--text); }
     .st-line { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); padding: 3px 0; }
@@ -319,6 +322,19 @@
     .st-entries summary { font-size: 11px; color: var(--text3); cursor: pointer; margin-top: 10px; }
     .st-entry { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 11px; color: var(--text2); padding: 6px 0; border-bottom: 1px solid var(--border); }
 
+    .ex-cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 11px; }
+    .ex-cat {
+      display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px;
+      background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text2); font-size: 10px; font-weight: 600; cursor: pointer; text-align: center; line-height: 1.2;
+    }
+    .ex-cat.on { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+    .ex-bar-wrap { height: 6px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+    .ex-bar { height: 100%; background: var(--amber); border-radius: 4px; }
+    .ex-row { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 7px; cursor: pointer; }
+    .ex-pay { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text3); padding: 4px 0 4px 10px; border-left: 2px solid var(--border); margin: 3px 0; }
+    .ex-bill { border-top: 1px solid var(--border); padding: 10px 0; }
+    .ex-day { font-size: 11px; font-weight: 700; color: var(--text3); margin: 12px 0 6px; display: flex; justify-content: space-between; }
     /* ── TOAST ── */
     #manageToast {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
@@ -360,6 +376,7 @@
     </div>
     <div class="header-actions">
       <button class="header-btn" id="syncBtn" onclick="syncWithCloud()" title="Sync with POS">🔄 Sync</button>
+      <button class="header-btn" onclick="switchTab('tabSettings', null)" title="Settings">⚙️</button>
       <button class="header-btn" onclick="handleLogout()" title="Logout">🚪</button>
     </div>
   </header>
@@ -514,6 +531,22 @@
     <div id="stViewPay" style="display:none;"></div>
   </main>
 
+  <main id="tabExpenses" class="view-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;">
+      <span id="exHeadTitle" style="font-size:13px;font-weight:700;color:var(--amber);">EXPENSE MANAGEMENT</span>
+      <div style="display:flex;gap:6px;">
+        <button class="header-btn" id="exLangBtn" onclick="toggleStaffLang()">English</button>
+        <button class="header-btn" id="exAddBtn" onclick="openExpenseForm()">+ Add Expense</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;">
+      <button class="pill-btn active" id="exSegList" onclick="exSegment('list')">📋 Expenses</button>
+      <button class="pill-btn" id="exSegCredit" onclick="exSegment('credit')">🧾 Credit (Udhar)</button>
+    </div>
+    <div id="exBody"></div>
+    <div id="exCreditBody" style="display:none;"></div>
+  </main>
+
   <main id="tabSettings" class="view-content">
     <div class="section-title">CLOUD (FIREBASE)</div>
     <div class="metric-card" style="margin-bottom:14px;">
@@ -558,9 +591,9 @@
       <span class="nav-icon">👥</span>
       <span id="navStaffLbl">Staff</span>
     </button>
-    <button class="nav-item" onclick="switchTab('tabSettings', this)">
-      <span class="nav-icon">⚙️</span>
-      <span>Settings</span>
+    <button class="nav-item" onclick="switchTab('tabExpenses', this)">
+      <span class="nav-icon">💸</span>
+      <span id="navExpLbl">Expenses</span>
     </button>
   </nav>
 
@@ -1116,6 +1149,7 @@
     if (tabId === 'tabMenu') renderMenuEditor();
     if (tabId === 'tabSettings') updateSettingsCounts();
     if (tabId === 'tabStaff') renderStaffCurrent();
+    if (tabId === 'tabExpenses') renderExpenses();
   }
 
   // ─── TOAST ───
@@ -1650,6 +1684,7 @@
     fbDb.doc('sync/state').onSnapshot(snap => { if (snap.exists) handleSyncState(snap.data()); }, cloudListenerError('sync'));
 
     startStaffListeners();
+    startExpenseListeners();
   }
 
   // ─── SYNC WITH POS ───
@@ -1806,18 +1841,49 @@
     'Everyone is already marked': 'सर्वांची नोंद आधीच झाली आहे', '✅ {0} marked present': '✅ {0} जण हजर केले',
     'No active staff for this date. Add staff in the Team tab.': 'या तारखेसाठी सक्रिय कर्मचारी नाहीत. टीम मध्ये कर्मचारी जोडा.',
     'This month': 'चालू महिना', 'Salary earned': 'कमावलेला पगार', 'Advances': 'उचल', 'Salary paid': 'दिलेला पगार', 'Still to pay': 'द्यायचे बाकी',
-    'present days × rate': 'हजर दिवस × दर', 'salary after absences': 'गैरहजेरी वजा पगार', 'Earned ({0})': 'कमाई ({0})',
+    'present days × rate': 'हजर दिवस × दर', 'salary for present days': 'हजर दिवसांचा पगार', 'Earned ({0})': 'कमाई ({0})',
     '+ Bonus': '+ बोनस', '− Fines': '− दंड', '− Advances taken': '− घेतलेली उचल', '− Salary already paid': '− आधी दिलेला पगार',
     'Balance due {0}': 'बाकी देणे {0}', 'Overpaid {0} (adjust next month)': 'जास्त दिले {0} (पुढच्या महिन्यात वजा करा)',
     'Settled ✓': 'हिशोब पूर्ण ✓', '💵 Pay salary': '💵 पगार द्या', '+ Advance': '+ उचल', '+ Fine': '+ दंड',
     'Entries this month ({0})': 'या महिन्यातील नोंदी ({0})', 'No staff on payroll for this month.': 'या महिन्यासाठी पगारात कोणीही नाही.',
     '⬇ Download this month as CSV': '⬇ हा महिना CSV म्हणून डाउनलोड करा',
-    'Monthly staff: salary ÷ days in the month, reduced for Absent days and Half days (days not marked count as paid). Daily-wage staff: rate × Present days (Half day = half). Advances, bonus, fines and payments are counted in the month you choose when saving them.':
-      'महिन्याचा पगार असलेले कर्मचारी: पगार ÷ महिन्यातील दिवस, त्यातून गैरहजर दिवस व अर्धे दिवस वजा (नोंद नसलेले दिवस पगारी धरले जातात). रोजंदारी कर्मचारी: दर × हजर दिवस (अर्धा दिवस = निम्मा). उचल, बोनस, दंड व पगार तुम्ही जतन करताना निवडलेल्या महिन्यात मोजले जातात.',
+    'Monthly staff: salary ÷ days in the month × (Present days + Paid leave + half for Half days). Days that are not marked count as Absent and are NOT paid, so in the current month only the days marked so far are counted. Daily-wage staff: rate × Present days (Half day = half). Advances, bonus, fines and payments are counted in the month you choose when saving them.':
+      'महिन्याचा पगार असलेले कर्मचारी: पगार ÷ महिन्यातील दिवस × (हजर दिवस + पगारी सुट्टी + अर्ध्या दिवसाचा निम्मा). नोंद नसलेले दिवस गैरहजर धरले जातात व त्यांचा पगार दिला जात नाही, म्हणून चालू महिन्यात आतापर्यंत नोंदवलेल्या दिवसांचाच पगार दिसतो. रोजंदारी कर्मचारी: दर × हजर दिवस (अर्धा दिवस = निम्मा). उचल, बोनस, दंड व पगार तुम्ही जतन करताना निवडलेल्या महिन्यात मोजले जातात.',
     'Advance given': 'उचल दिली', 'Bonus': 'बोनस', 'Fine / deduction': 'दंड / कपात', 'Salary payment': 'पगार दिला',
     'Amount (₹) *': 'रक्कम (₹) *', 'Date given': 'तारीख', 'Counts for month': 'कोणत्या महिन्यासाठी',
     'Note (optional)': 'टीप (ऐच्छिक)', 'e.g. cash, festival, broken glass': 'उदा. रोख, सण, काच फुटली',
-    '⚠️ Enter an amount': '⚠️ रक्कम लिहा', 'Delete this entry?': 'ही नोंद हटवायची?'
+    '⚠️ Enter an amount': '⚠️ रक्कम लिहा', 'Delete this entry?': 'ही नोंद हटवायची?',
+    'Absent / not marked': 'गैरहजर / नोंद नाही', 'Not marked (counts as absent)': 'नोंद नाही (गैरहजर धरले)',
+    // ── expenses ──
+    'Expenses': 'खर्च', 'EXPENSE MANAGEMENT': 'खर्च व्यवस्थापन', '+ Add Expense': '+ खर्च जोडा',
+    'Total expenses': 'एकूण खर्च', "Today's expenses": 'आजचा खर्च', 'Paid in cash': 'रोख दिले', 'Paid online': 'ऑनलाइन दिले',
+    'Unpaid (credit): {0}': 'उधार बाकी: {0}', 'MONTH SUMMARY': 'महिन्याचा हिशोब', 'Sales': 'विक्री',
+    'Staff paid (salary + advance)': 'कर्मचाऱ्यांना दिले (पगार + उचल)', 'Estimated profit': 'अंदाजे नफा', 'Estimated loss': 'अंदाजे तोटा',
+    'Sales minus expenses minus staff payments. Sales come from the bills saved on this phone.': 'नफा = विक्री − खर्च − कर्मचाऱ्यांना दिलेले. विक्री या फोनमध्ये साठवलेल्या बिलांवरून घेतली आहे.',
+    'BY CATEGORY': 'प्रकारानुसार खर्च', 'ALL EXPENSES': 'सर्व खर्च', 'All categories': 'सर्व प्रकार',
+    'Vegetables': 'भाजीपाला', 'Grocery': 'किराणा', 'Dairy (milk, paneer)': 'दूध / पनीर / डेअरी',
+    'Gas / Fuel': 'गॅस / इंधन', 'Electricity': 'वीज बिल', 'Water': 'पाणी', 'Rent': 'भाडे', 'Repair / Maintenance': 'दुरुस्ती / देखभाल',
+    'Cleaning supplies': 'स्वच्छतेचे सामान', 'Utensils / Equipment': 'भांडी / उपकरणे', 'Packaging': 'पॅकिंग साहित्य', 'Transport': 'वाहतूक',
+    'Marketing': 'जाहिरात', 'Phone / Internet': 'मोबाईल / इंटरनेट', 'License / Tax': 'परवाना / कर',
+    'Add expense': 'खर्च जोडा', 'Edit expense': 'खर्च बदला', 'Category': 'खर्चाचा प्रकार', 'Date': 'तारीख', 'Payment': 'पेमेंट',
+    'Paid': 'दिले', 'Not paid yet (credit)': 'अजून दिले नाहीत (उधार)', 'Paid by': 'कसे दिले',
+    'Cash': 'रोख', 'UPI': 'UPI', 'Card': 'कार्ड', 'Bank transfer': 'बँक ट्रान्सफर',
+    'Paid to (shop / person)': 'कोणाला दिले (दुकान / व्यक्ती)', 'e.g. Ganesh Vegetables': 'उदा. गणेश भाजीपाला', 'e.g. 20 kg onions': 'उदा. 20 किलो कांदे',
+    'Expense saved': 'खर्च जतन केला', 'Delete this expense?': 'हा खर्च हटवायचा?', '🗑 Expense deleted': '🗑 खर्च हटवला',
+    '✅ Marked as paid': '✅ दिले म्हणून नोंद केले', '✓ Paid': '✓ दिले', 'Credit': 'उधार', 'No expenses found.': 'खर्च आढळला नाही.',
+    'Tap + Add Expense to record your first expense.': 'पहिला खर्च नोंदवण्यासाठी "+ खर्च जोडा" दाबा.',
+    // ── udhar (credit) ──
+    '📋 Expenses': '📋 खर्च', '🧾 Credit (Udhar)': '🧾 उधार', 'Total unpaid credit: {0}': 'एकूण बाकी उधार: {0}',
+    'Total outstanding': 'एकूण बाकी उधार', 'Suppliers with balance': 'बाकी असलेले', 'Overdue': 'मुदत संपलेले',
+    'Unknown supplier': 'नाव नाही', '{0} open bills': '{0} बिले बाकी', 'Billed': 'एकूण बिल', 'Paid so far': 'आतापर्यंत दिले', 'Balance': 'बाकी',
+    '💵 Pay': '💵 पैसे द्या', 'Pay {0}': '{0} ला पैसे द्या', 'Edit': 'बदला', 'Bills & payments': 'बिले व पेमेंट',
+    'Amount to pay (₹) *': 'द्यायची रक्कम (₹) *', 'Payment date': 'पैसे दिल्याची तारीख', 'Payment saved': 'पेमेंट जतन केले',
+    'Cannot pay more than the balance ({0})': 'बाकी रकमेपेक्षा जास्त देता येत नाही ({0})',
+    'Delete this payment?': 'हे पेमेंट हटवायचे?', 'The money is paid to the oldest bills first.': 'पैसे आधी सर्वात जुन्या बिलांना लागू होतात.',
+    'No credit (udhar) yet.': 'अजून कोणताही उधार नाही.',
+    'Credit bills appear here when you choose "Not paid yet (credit)" while adding an expense.': 'खर्च जोडताना "अजून दिले नाहीत (उधार)" निवडल्यास तो येथे दिसतो.',
+    'Partly paid': 'अर्धे दिले', 'Due on {0}': 'देय: {0}', 'Due date (optional)': 'पैसे द्यायची तारीख (ऐच्छिक)',
+    'Settled': 'हिशोब पूर्ण', 'Payments': 'दिलेल्या रकमा', 'Paid {0} · Balance {1}': 'दिले {0} · बाकी {1}'
   };
   function stT(s) {
     let out = (stLang === 'mr' && ST_MR[s]) ? ST_MR[s] : s;
@@ -1833,6 +1899,12 @@
     set('stSegAtt', stT('✅ Attendance'));
     set('stSegPay', stT('💰 Payroll'));
     set('stLangBtn', stLang === 'mr' ? 'English' : 'मराठी');
+    set('navExpLbl', stT('Expenses'));
+    set('exHeadTitle', stT('EXPENSE MANAGEMENT'));
+    set('exAddBtn', stT('+ Add Expense'));
+    set('exLangBtn', stLang === 'mr' ? 'English' : 'मराठी');
+    set('exSegList', stT('📋 Expenses'));
+    set('exSegCredit', stT('🧾 Credit (Udhar)'));
   }
   function toggleStaffLang() {
     stLang = (stLang === 'mr') ? 'en' : 'mr';
@@ -1840,6 +1912,7 @@
     stApplyLang();
     stCloseModal();
     renderStaffCurrent();
+    renderExpenses();
   }
 
   const ST_ROLES = ['Cook / Chef', 'Tandoor', 'Waiter', 'Cashier', 'Manager', 'Helper', 'Cleaner', 'Delivery', 'Other'];
@@ -1928,8 +2001,9 @@
     }
     return true;
   }
-  // Monthly staff: salary ÷ days in month, minus absent days and half-days (unmarked days count as paid).
-  // Daily-wage staff: rate × present days (+ half for half-days).
+  // Monthly staff: salary ÷ days in month × (present + paid leave + half for half-days).
+  // Daily-wage staff: rate × (present + half for half-days).
+  // Days that are NOT marked count as not present → they are NOT paid.
   function staffMonthStats(s, ym) {
     const days = stMonthDays(ym);
     let P = 0, H = 0, A = 0, L = 0, emp = 0;
@@ -1943,10 +2017,10 @@
     const rate = Number(s.rate) || 0;
     const earned = Math.round(s.payType === 'daily'
       ? rate * (P + 0.5 * H)
-      : rate * Math.max(0, emp - A - 0.5 * H) / days);
+      : rate * (P + L + 0.5 * H) / days);
     const led = { advance: 0, bonus: 0, fine: 0, salary: 0 };
     staffLedger.forEach(e => { if (e.staffId === s.id && e.month === ym && led[e.type] !== undefined) led[e.type] += Number(e.amount) || 0; });
-    return Object.assign({ days, emp, P, H, A, L, unmarked: emp - P - H - A - L, earned }, led,
+    return Object.assign({ days, emp, P, H, A, L, unmarked: emp - P - H - A - L, absentTotal: A + (emp - P - H - A - L), earned }, led,
       { due: earned + led.bonus - led.fine - led.advance - led.salary });
   }
 
@@ -2140,7 +2214,7 @@
       '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">' +
         '<span class="st-chip P">' + stT('Present') + ' ' + cnt.P + '</span><span class="st-chip H">' + stT('Half') + ' ' + cnt.H + '</span>' +
         '<span class="st-chip A">' + stT('Absent') + ' ' + cnt.A + '</span><span class="st-chip L">' + stT('Leave') + ' ' + cnt.L + '</span>' +
-        '<span class="st-chip">' + stT('Not marked') + ' ' + notMarked + '</span></div>' +
+        '<span class="st-chip">' + stT('Not marked (counts as absent)') + ' ' + notMarked + '</span></div>' +
       (list.length ? '<button class="login-btn" style="margin-bottom:12px;" onclick="markAllPresent()">' + stT('✓ Mark everyone not yet marked as Present') + '</button>' : '') +
       (list.length ? list.map(s => {
         const cur = marks[s.id];
@@ -2172,8 +2246,8 @@
         '<div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="st-name">' + stEsc(s.name) + '</div>' +
         '<div class="st-sub">' + stEsc(stT(s.role || 'Staff')) + ' · ' + stMoney(s.rate) + ' ' + stT(s.payType === 'daily' ? '/ day' : '/ month') + '</div></div>' +
         (s.status === 'left' ? '<span class="st-chip">' + stT('Left') + '</span>' : '') + '</div>' +
-        '<div class="st-counts"><div><b>' + st.P + '</b>' + stT('Present') + '</div><div><b>' + st.H + '</b>' + stT('Half') + '</div><div><b>' + st.A + '</b>' + stT('Absent') + '</div><div><b>' + st.L + '</b>' + stT('Leave') + '</div><div><b>' + st.unmarked + '</b>' + stT('Unmarked') + '</div></div>' +
-        '<div class="st-line"><span>' + stT('Earned ({0})', stT(s.payType === 'daily' ? 'present days × rate' : 'salary after absences')) + '</span><span>' + stMoney(st.earned) + '</span></div>' +
+        '<div class="st-counts"><div><b>' + st.P + '</b>' + stT('Present') + '</div><div><b>' + st.H + '</b>' + stT('Half') + '</div><div><b>' + st.L + '</b>' + stT('Leave') + '</div><div><b>' + st.absentTotal + '</b>' + stT('Absent / not marked') + '</div></div>' +
+        '<div class="st-line"><span>' + stT('Earned ({0})', stT(s.payType === 'daily' ? 'present days × rate' : 'salary for present days')) + '</span><span>' + stMoney(st.earned) + '</span></div>' +
         (st.bonus ? '<div class="st-line"><span>' + stT('+ Bonus') + '</span><span>' + stMoney(st.bonus) + '</span></div>' : '') +
         (st.fine ? '<div class="st-line"><span>' + stT('− Fines') + '</span><span>' + stMoney(st.fine) + '</span></div>' : '') +
         (st.advance ? '<div class="st-line"><span>' + stT('− Advances taken') + '</span><span>' + stMoney(st.advance) + '</span></div>' : '') +
@@ -2205,7 +2279,7 @@
       '</div>' +
       (rows.length ? rows.map(card).join('') : '<div class="metric-card" style="text-align:center;color:var(--text3);font-size:13px;">' + stT('No staff on payroll for this month.') + '</div>') +
       (rows.length ? '<button class="header-btn" style="width:100%;padding:11px;margin-top:4px;" onclick="downloadPayrollCsv()">' + stT('⬇ Download this month as CSV') + '</button>' : '') +
-      '<p style="font-size:11px;color:var(--text3);margin-top:12px;line-height:1.5;">' + stT('Monthly staff: salary ÷ days in the month, reduced for Absent days and Half days (days not marked count as paid). Daily-wage staff: rate × Present days (Half day = half). Advances, bonus, fines and payments are counted in the month you choose when saving them.') + '</p>';
+      '<p style="font-size:11px;color:var(--text3);margin-top:12px;line-height:1.5;">' + stT('Monthly staff: salary ÷ days in the month × (Present days + Paid leave + half for Half days). Days that are not marked count as Absent and are NOT paid, so in the current month only the days marked so far are counted. Daily-wage staff: rate × Present days (Half day = half). Advances, bonus, fines and payments are counted in the month you choose when saving them.') + '</p>';
   }
 
   function openLedgerForm(staffId, type) {
@@ -2263,6 +2337,362 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }
 
+  // ═══════════════ EXPENSE MANAGEMENT + UDHAR (खर्च व्यवस्थापन व उधार) ═══════════════
+  // Daily restaurant expenses, plus supplier credit (udhar) with partial payments.
+  // Saved on this phone first, then Firebase (collection: expenses). Same मराठी / English switch as Staff.
+  const LS_EXPENSES = 'mghr_expenses';
+  let expenseList = [];
+  let exMonth = '', exFilter = 'all', exFormCat = 'Vegetables', exSeg = 'list';
+  const EX_CATS = [
+    ['Vegetables', '🥬'], ['Grocery', '🛒'], ['Dairy (milk, paneer)', '🥛'],
+    ['Gas / Fuel', '🔥'], ['Electricity', '💡'], ['Water', '💧'], ['Rent', '🏠'], ['Repair / Maintenance', '🔧'],
+    ['Cleaning supplies', '🧽'], ['Utensils / Equipment', '🍳'], ['Packaging', '📦'], ['Transport', '🚚'],
+    ['Marketing', '📣'], ['Phone / Internet', '📱'], ['License / Tax', '📄'], ['Other', '📝']
+  ];
+  const EX_MODES = ['Cash', 'UPI', 'Card', 'Bank transfer'];
+  function exNormCat(c) { return EX_CATS.some(x => x[0] === c) ? c : 'Other'; }       // removed categories fall back to "Other"
+  function exIcon(cat) { const c = EX_CATS.find(x => x[0] === cat); return c ? c[1] : '📝'; }
+
+  // Every expense has payments. Old "paid" expenses count as one payment of the full amount.
+  function exPayments(e) {
+    if (Array.isArray(e.payments)) return e.payments;
+    if (e.status !== 'unpaid') return [{ id: 'p0', date: e.paidDate || e.date, amount: Number(e.amount) || 0, mode: e.mode || 'Cash', note: '' }];
+    return [];
+  }
+  function exPaid(e) { return exPayments(e).reduce((n, p) => n + (Number(p.amount) || 0), 0); }
+  function exBalance(e) { return Math.max(0, Math.round(((Number(e.amount) || 0) - exPaid(e)) * 100) / 100); }
+  function exIsCredit(e) { return !!e.credit || e.status === 'unpaid'; }
+  const exSum = list => list.reduce((n, e) => n + (Number(e.amount) || 0), 0);
+  function exFinalize(e) {
+    e.status = exBalance(e) > 0 ? 'unpaid' : 'paid';
+    const pays = exPayments(e);
+    e.paidDate = e.status === 'paid' ? ((pays.length && pays[pays.length - 1].date) || stToday()) : '';
+    e.updatedAt = Date.now();
+  }
+  function exSaveOne(e) { saveExpenseLocal(); stCloudSet('expenses', e.id, e); }
+
+  function loadExpenseData() {
+    try { expenseList = JSON.parse(localStorage.getItem(LS_EXPENSES)) || []; } catch (e) { console.warn('expense load failed', e); }
+    expenseList.forEach(e => { e.category = exNormCat(e.category); });
+    exMonth = stToday().slice(0, 7);
+  }
+  function saveExpenseLocal() { try { localStorage.setItem(LS_EXPENSES, JSON.stringify(expenseList)); } catch (e) {} }
+
+  function startExpenseListeners() {
+    if (!fbDb) return;
+    const since = stShiftDay(stToday(), -400);
+    fbDb.collection('expenses').where('date', '>=', since).onSnapshot(snap => {
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'removed') { expenseList = expenseList.filter(x => x.id !== ch.doc.id); return; }
+        const d = ch.doc.data();
+        d.category = exNormCat(d.category);
+        const i = expenseList.findIndex(x => x.id === d.id);
+        if (i >= 0) expenseList[i] = d; else expenseList.push(d);
+      });
+      saveExpenseLocal(); renderExpenses();
+    }, cloudListenerError('expenses'));
+  }
+
+  function setExMonth(ym) { if (ym) { exMonth = ym; renderExpenses(); } }
+  function setExFilter(v) { exFilter = v; renderExpenses(); }
+  function exSegment(seg) { exSeg = seg; renderExpenses(); }
+
+  function renderExpenses() {
+    const tab = document.getElementById('tabExpenses');
+    if (!tab || !tab.classList.contains('active')) return;
+    document.getElementById('exSegList').classList.toggle('active', exSeg === 'list');
+    document.getElementById('exSegCredit').classList.toggle('active', exSeg === 'credit');
+    document.getElementById('exBody').style.display = exSeg === 'list' ? '' : 'none';
+    document.getElementById('exCreditBody').style.display = exSeg === 'credit' ? '' : 'none';
+    if (exSeg === 'list') renderExpenseList(); else renderUdhar();
+  }
+
+  // ════════ EXPENSE LIST ════════
+  function renderExpenseList() {
+    const el = document.getElementById('exBody');
+    const ym = exMonth, today = stToday();
+    const inMonth = expenseList.filter(e => (e.date || '').slice(0, 7) === ym);
+    const total = exSum(inMonth);
+    const todayTotal = exSum(expenseList.filter(e => e.date === today));
+    // money actually paid out during this month (includes payments made now for older credit bills)
+    const pays = [];
+    expenseList.forEach(e => exPayments(e).forEach(p => { if ((p.date || '').slice(0, 7) === ym) pays.push(p); }));
+    const cash = pays.filter(p => p.mode === 'Cash').reduce((n, p) => n + (Number(p.amount) || 0), 0);
+    const online = pays.filter(p => p.mode !== 'Cash').reduce((n, p) => n + (Number(p.amount) || 0), 0);
+    const unpaidAll = expenseList.reduce((n, e) => n + exBalance(e), 0);
+    const sales = salesData.filter(b => getLocalDateKey(parseBillDate(b)).slice(0, 7) === ym).reduce((n, b) => n + (Number(b.total) || 0), 0);
+    const staffPaid = staffLedger.filter(l => (l.type === 'salary' || l.type === 'advance') && (l.date || '').slice(0, 7) === ym).reduce((n, l) => n + (Number(l.amount) || 0), 0);
+    const profit = sales - total - staffPaid;
+
+    const byCat = {};
+    inMonth.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
+    const cats = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
+    const maxCat = cats.length ? byCat[cats[0]] : 1;
+
+    const shown = inMonth.filter(e => exFilter === 'all' || e.category === exFilter)
+      .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.updatedAt || 0) - (a.updatedAt || 0)));
+    const days = [];
+    shown.forEach(e => { let g = days.find(d => d.date === e.date); if (!g) { g = { date: e.date, items: [] }; days.push(g); } g.items.push(e); });
+
+    const row = e => {
+      const bal = exBalance(e), paid = exPaid(e);
+      return '<div class="ex-row" onclick="openExpenseForm(\'' + e.id + '\')">' +
+        '<div style="font-size:22px;">' + exIcon(e.category) + '</div>' +
+        '<div style="flex:1;min-width:0;"><div class="st-name" style="font-size:13px;">' + stEsc(stT(e.category)) + '</div>' +
+        '<div class="st-sub">' + stEsc([e.vendor, e.note].filter(Boolean).join(' · ') || stT((exPayments(e)[0] || {}).mode || e.mode || 'Cash')) + '</div></div>' +
+        '<div style="text-align:right;"><div style="font-weight:800;font-size:14px;">' + stMoney(e.amount) + '</div>' +
+        (bal > 0
+          ? '<div style="margin-top:4px;"><span class="st-chip A">' + stT(paid > 0 ? 'Partly paid' : 'Credit') + '</span></div><div class="st-sub">' + stT('Balance') + ' ' + stMoney(bal) + '</div>'
+          : '<div class="st-sub">' + stT((exPayments(e)[0] || {}).mode || e.mode || 'Cash') + '</div>') + '</div></div>';
+    };
+
+    el.innerHTML =
+      '<div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;">' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setExMonth(stShiftMonth(exMonth,-1))">◀</button>' +
+        '<div style="flex:1;text-align:center;font-weight:800;font-size:14px;color:var(--amber);">' + stMonthLabel(ym) + '</div>' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setExMonth(stShiftMonth(exMonth,1))">▶</button>' +
+        '<button class="header-btn" style="padding:9px 12px;" onclick="setExMonth(stToday().slice(0,7))">' + stT('This month') + '</button>' +
+      '</div>' +
+      '<div class="st-grid4">' +
+        '<div class="metric-card highlight"><div class="metric-label">' + stT('Total expenses') + '</div><div class="metric-value" style="font-size:20px;">' + stMoney(total) + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT("Today's expenses") + '</div><div class="metric-value" style="font-size:20px;">' + stMoney(todayTotal) + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Paid in cash') + '</div><div class="metric-value" style="font-size:18px;">' + stMoney(cash) + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Paid online') + '</div><div class="metric-value" style="font-size:18px;">' + stMoney(online) + '</div></div>' +
+      '</div>' +
+      (unpaidAll > 0 ? '<div class="metric-card" onclick="exSegment(\'credit\')" style="margin-bottom:12px;border-color:var(--red);color:#ff8a7d;font-weight:700;font-size:13px;cursor:pointer;">' + stT('Total unpaid credit: {0}', stMoney(unpaidAll)) + ' ›</div>' : '') +
+      '<div class="section-title">' + stT('MONTH SUMMARY') + '</div>' +
+      '<div class="metric-card" style="margin-bottom:14px;text-align:left;">' +
+        '<div class="st-line"><span>' + stT('Sales') + '</span><span>' + stMoney(sales) + '</span></div>' +
+        '<div class="st-line"><span>− ' + stT('Expenses') + '</span><span>' + stMoney(total) + '</span></div>' +
+        '<div class="st-line"><span>− ' + stT('Staff paid (salary + advance)') + '</span><span>' + stMoney(staffPaid) + '</span></div>' +
+        '<div class="st-line total" style="color:' + (profit >= 0 ? 'var(--green)' : '#ff8a7d') + ';"><span>' + stT(profit >= 0 ? 'Estimated profit' : 'Estimated loss') + '</span><span>' + stMoney(Math.abs(profit)) + '</span></div>' +
+        '<div class="st-sub" style="margin-top:6px;">' + stT('Sales minus expenses minus staff payments. Sales come from the bills saved on this phone.') + '</div>' +
+      '</div>' +
+      (cats.length ? '<div class="section-title">' + stT('BY CATEGORY') + '</div><div class="metric-card" style="margin-bottom:14px;text-align:left;">' + cats.map(c =>
+        '<div style="margin-bottom:10px;"><div class="st-line"><span>' + exIcon(c) + ' ' + stEsc(stT(c)) + '</span><span>' + stMoney(byCat[c]) + ' · ' + Math.round(byCat[c] * 100 / (total || 1)) + '%</span></div>' +
+        '<div class="ex-bar-wrap"><div class="ex-bar" style="width:' + Math.max(3, Math.round(byCat[c] * 100 / maxCat)) + '%;"></div></div></div>').join('') + '</div>' : '') +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;">' +
+        '<div class="section-title" style="margin:0;">' + stT('ALL EXPENSES') + '</div>' +
+        '<select class="form-input" style="width:auto;padding:7px 10px;font-size:12px;" onchange="setExFilter(this.value)"><option value="all">' + stT('All categories') + '</option>' +
+          EX_CATS.map(c => '<option value="' + c[0] + '"' + (exFilter === c[0] ? ' selected' : '') + '>' + c[1] + ' ' + stEsc(stT(c[0])) + '</option>').join('') + '</select></div>' +
+      (days.length ? days.map(d => '<div class="ex-day"><span>' + stDateLabel(d.date) + '</span><span>' + stMoney(exSum(d.items)) + '</span></div>' + d.items.map(row).join('')).join('') :
+        '<div class="metric-card" style="text-align:center;color:var(--text3);font-size:13px;margin-top:8px;">' + stT('No expenses found.') + '<br>' + stT('Tap + Add Expense to record your first expense.') + '</div>') +
+      (inMonth.length ? '<button class="header-btn" style="width:100%;padding:11px;margin-top:10px;" onclick="downloadExpensesCsv()">' + stT('⬇ Download this month as CSV') + '</button>' : '');
+  }
+
+  // ════════ UDHAR (SUPPLIER CREDIT) ════════
+  let exVendorKeys = [];
+  function renderUdhar() {
+    const el = document.getElementById('exCreditBody');
+    const today = stToday();
+    const bills = expenseList.filter(exIsCredit);
+    const groups = {};
+    bills.forEach(e => { const k = e.vendor || ''; (groups[k] = groups[k] || []).push(e); });
+    const list = Object.keys(groups).map(k => {
+      const items = groups[k].slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+      return { key: k, items, billed: exSum(items), paid: items.reduce((n, e) => n + exPaid(e), 0), bal: items.reduce((n, e) => n + exBalance(e), 0) };
+    }).sort((a, b) => ((b.bal > 0) - (a.bal > 0)) || (b.bal - a.bal));
+    exVendorKeys = list.map(g => g.key);
+    const totalBal = list.reduce((n, g) => n + g.bal, 0);
+    const overdue = bills.filter(e => exBalance(e) > 0 && e.dueDate && e.dueDate < today).reduce((n, e) => n + exBalance(e), 0);
+    const suppliers = list.filter(g => g.bal > 0).length;
+
+    const billHtml = e => {
+      const bal = exBalance(e), paid = exPaid(e), pays = exPayments(e);
+      const isOver = bal > 0 && e.dueDate && e.dueDate < today;
+      return '<div class="ex-bill">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;"><div>' +
+          '<div class="st-name" style="font-size:13px;">' + exIcon(e.category) + ' ' + stEsc(stT(e.category)) + ' · ' + stShortDate(e.date) + '</div>' +
+          (e.note ? '<div class="st-sub">' + stEsc(e.note) + '</div>' : '') +
+          (e.dueDate && bal > 0 ? '<div class="st-sub" style="' + (isOver ? 'color:#ff8a7d;font-weight:700;' : '') + '">' + stT('Due on {0}', stShortDate(e.dueDate)) + (isOver ? ' · ' + stT('Overdue') : '') + '</div>' : '') +
+        '</div><div style="text-align:right;"><div style="font-weight:800;">' + stMoney(e.amount) + '</div>' +
+          '<div class="st-sub">' + (bal > 0 ? stT('Paid {0} · Balance {1}', stMoney(paid), stMoney(bal)) : '<span style="color:var(--green);">' + stT('Settled') + ' ✓</span>') + '</div></div></div>' +
+        (pays.length ? '<div style="margin-top:6px;">' + pays.map(p =>
+          '<div class="ex-pay"><span>' + stShortDate(p.date) + ' · ' + stT(p.mode || 'Cash') + (p.note ? ' · ' + stEsc(p.note) : '') + '</span>' +
+          '<span style="display:flex;gap:6px;align-items:center;"><b>' + stMoney(p.amount) + '</b><button class="header-btn" style="padding:1px 7px;" onclick="deletePayment(\'' + e.id + '\',\'' + p.id + '\')">✕</button></span></div>').join('') + '</div>' : '') +
+        '<div class="st-actions" style="margin-top:8px;">' +
+          (bal > 0 ? '<button class="header-btn" onclick="openPayBill(\'' + e.id + '\')">' + stT('💵 Pay') + '</button>' : '') +
+          '<button class="header-btn" onclick="openExpenseForm(\'' + e.id + '\')">' + stT('Edit') + '</button></div></div>';
+    };
+
+    el.innerHTML =
+      '<div class="st-grid3">' +
+        '<div class="metric-card highlight"><div class="metric-label">' + stT('Total outstanding') + '</div><div class="metric-value" style="font-size:17px;">' + stMoney(totalBal) + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Suppliers with balance') + '</div><div class="metric-value">' + suppliers + '</div></div>' +
+        '<div class="metric-card"><div class="metric-label">' + stT('Overdue') + '</div><div class="metric-value" style="font-size:17px;' + (overdue > 0 ? 'color:#ff8a7d;' : '') + '">' + stMoney(overdue) + '</div></div>' +
+      '</div>' +
+      (list.length ? list.map((g, i) =>
+        '<div class="metric-card" style="margin-bottom:12px;text-align:left;' + (g.bal <= 0 ? 'opacity:0.65;' : '') + '">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="min-width:0;">' +
+            '<div class="st-name">' + stEsc(g.key || stT('Unknown supplier')) + '</div>' +
+            '<div class="st-sub">' + stT('{0} open bills', g.items.filter(e => exBalance(e) > 0).length) + ' · ' + stT('Billed') + ' ' + stMoney(g.billed) + ' · ' + stT('Paid so far') + ' ' + stMoney(g.paid) + '</div></div>' +
+            '<div style="text-align:right;"><div class="st-sub">' + stT('Balance') + '</div><div style="font-weight:800;font-size:18px;color:' + (g.bal > 0 ? 'var(--amber)' : 'var(--green)') + ';">' + stMoney(g.bal) + '</div></div></div>' +
+          (g.bal > 0 ? '<div class="st-actions"><button class="header-btn" style="padding:9px 14px;" onclick="openPayVendor(' + i + ')">' + stT('💵 Pay') + '</button></div>' : '<div class="st-sub" style="margin-top:6px;color:var(--green);">' + stT('Settled') + ' ✓</div>') +
+          '<details class="st-entries"><summary>' + stT('Bills & payments') + '</summary>' + g.items.slice().reverse().map(billHtml).join('') + '</details></div>').join('') :
+        '<div class="metric-card" style="text-align:center;color:var(--text3);font-size:13px;">' + stT('No credit (udhar) yet.') + '<br>' + stT('Credit bills appear here when you choose "Not paid yet (credit)" while adding an expense.') + '</div>');
+  }
+
+  // ── payments ──
+  function payFormHtml(maxAmt, saveCall) {
+    return '<div class="st-field"><label class="form-label">' + stT('Amount to pay (₹) *') + '</label><input id="pfAmount" class="form-input" type="number" inputmode="decimal" min="0" style="font-size:22px;font-weight:800;" value="' + maxAmt + '"></div>' +
+      '<div class="st-sub" style="margin:-4px 0 10px;">' + stT('Balance') + ': ' + stMoney(maxAmt) + '</div>' +
+      '<div style="display:flex;gap:10px;"><div class="st-field" style="flex:1;"><label class="form-label">' + stT('Payment date') + '</label><input id="pfDate" class="form-input" type="date" value="' + stToday() + '"></div>' +
+      '<div class="st-field" style="flex:1;"><label class="form-label">' + stT('Paid by') + '</label><select id="pfMode" class="form-input">' + EX_MODES.map(o => '<option value="' + o + '">' + stT(o) + '</option>').join('') + '</select></div></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Note (optional)') + '</label><input id="pfNote" class="form-input"></div>' + saveCall;
+  }
+  function readPayForm(maxAmt) {
+    const amount = parseFloat(document.getElementById('pfAmount').value);
+    if (!isFinite(amount) || amount <= 0) { showToast(stT('⚠️ Enter an amount')); return null; }
+    if (amount > maxAmt + 0.009) { showToast(stT('Cannot pay more than the balance ({0})', stMoney(maxAmt)), 4000); return null; }
+    return { amount, date: document.getElementById('pfDate').value || stToday(), mode: document.getElementById('pfMode').value, note: document.getElementById('pfNote').value.trim() };
+  }
+  function addPaymentTo(e, p, amount) {
+    if (!Array.isArray(e.payments)) e.payments = exPayments(e).map(x => Object.assign({}, x));
+    e.payments.push({ id: stId('p'), date: p.date, amount, mode: p.mode, note: p.note });
+    e.credit = true;
+    exFinalize(e);
+    exSaveOne(e);
+  }
+
+  function openPayBill(id) {
+    const e = expenseList.find(x => x.id === id);
+    if (!e) return;
+    const bal = exBalance(e);
+    stOpenModal(stT('Pay {0}', stEsc(e.vendor || stT(e.category))),
+      payFormHtml(bal, '<button class="login-btn" onclick="savePayBill(\'' + id + '\')">' + stT('Save') + '</button>'));
+  }
+  function savePayBill(id) {
+    const e = expenseList.find(x => x.id === id);
+    if (!e) return;
+    const p = readPayForm(exBalance(e));
+    if (!p) return;
+    addPaymentTo(e, p, p.amount);
+    stCloseModal(); renderExpenses();
+    showToast('✅ ' + stT('Payment saved') + ': ' + stMoney(p.amount));
+  }
+
+  function exVendorBills(key) {
+    return expenseList.filter(e => exIsCredit(e) && (e.vendor || '') === key && exBalance(e) > 0)
+      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.updatedAt || 0) - (b.updatedAt || 0)));
+  }
+  function openPayVendor(i) {
+    const key = exVendorKeys[i];
+    const bills = exVendorBills(key);
+    const total = bills.reduce((n, e) => n + exBalance(e), 0);
+    stOpenModal(stT('Pay {0}', stEsc(key || stT('Unknown supplier'))),
+      payFormHtml(total, '<div class="st-sub" style="margin-bottom:10px;">' + stT('The money is paid to the oldest bills first.') + '</div><button class="login-btn" onclick="savePayVendor(' + i + ')">' + stT('Save') + '</button>'));
+  }
+  function savePayVendor(i) {
+    const key = exVendorKeys[i];
+    const bills = exVendorBills(key);
+    const total = bills.reduce((n, e) => n + exBalance(e), 0);
+    const p = readPayForm(total);
+    if (!p) return;
+    let rest = p.amount;
+    for (const e of bills) {                     // oldest bill first
+      if (rest <= 0.009) break;
+      const pay = Math.min(rest, exBalance(e));
+      addPaymentTo(e, p, pay);
+      rest -= pay;
+    }
+    stCloseModal(); renderExpenses();
+    showToast('✅ ' + stT('Payment saved') + ': ' + stMoney(p.amount));
+  }
+
+  function deletePayment(expId, payId) {
+    const e = expenseList.find(x => x.id === expId);
+    if (!e || !confirm(stT('Delete this payment?'))) return;
+    e.payments = exPayments(e).filter(p => p.id !== payId).map(x => Object.assign({}, x));
+    e.credit = true;
+    exFinalize(e);
+    exSaveOne(e);
+    renderExpenses();
+  }
+
+  // ════════ ADD / EDIT EXPENSE ════════
+  function pickExCat(c) {
+    exFormCat = c;
+    document.querySelectorAll('.ex-cat').forEach(b => b.classList.toggle('on', b.getAttribute('data-cat') === c));
+  }
+
+  function openExpenseForm(id) {
+    const e = id ? expenseList.find(x => x.id === id) : null;
+    const v = e || { date: stToday(), category: exFormCat || 'Vegetables', amount: '', mode: 'Cash', status: 'paid', vendor: '', note: '', dueDate: '' };
+    const isCredit = e ? exBalance(e) > 0 : false;
+    exFormCat = exNormCat(v.category);
+    const vendors = Array.from(new Set(expenseList.map(x => x.vendor).filter(Boolean)));
+    stOpenModal(stT(e ? 'Edit expense' : 'Add expense'),
+      '<div class="st-field"><label class="form-label">' + stT('Amount (₹) *') + '</label><input id="exfAmount" class="form-input" type="number" inputmode="decimal" min="0" style="font-size:22px;font-weight:800;" value="' + stEsc(v.amount) + '" placeholder="0"></div>' +
+      '<label class="form-label">' + stT('Category') + '</label><div class="ex-cats">' + EX_CATS.map(c =>
+        '<button type="button" class="ex-cat' + (c[0] === exFormCat ? ' on' : '') + '" data-cat="' + c[0] + '" onclick="pickExCat(\'' + c[0] + '\')"><span style="font-size:20px;">' + c[1] + '</span><span>' + stEsc(stT(c[0])) + '</span></button>').join('') + '</div>' +
+      '<div style="display:flex;gap:10px;"><div class="st-field" style="flex:1;"><label class="form-label">' + stT('Date') + '</label><input id="exfDate" class="form-input" type="date" value="' + stEsc(v.date) + '"></div>' +
+      '<div class="st-field" style="flex:1;"><label class="form-label">' + stT('Payment') + '</label><select id="exfStatus" class="form-input" onchange="document.getElementById(\'exfDueWrap\').style.display = this.value === \'unpaid\' ? \'\' : \'none\'"><option value="paid"' + (!isCredit ? ' selected' : '') + '>' + stT('Paid') + '</option><option value="unpaid"' + (isCredit ? ' selected' : '') + '>' + stT('Not paid yet (credit)') + '</option></select></div></div>' +
+      '<div class="st-field" id="exfDueWrap" style="' + (isCredit ? '' : 'display:none;') + '"><label class="form-label">' + stT('Due date (optional)') + '</label><input id="exfDue" class="form-input" type="date" value="' + stEsc(v.dueDate || '') + '"></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Paid by') + '</label><select id="exfMode" class="form-input">' + EX_MODES.map(o => '<option value="' + o + '"' + (o === v.mode ? ' selected' : '') + '>' + stT(o) + '</option>').join('') + '</select></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Paid to (shop / person)') + '</label><input id="exfVendor" class="form-input" list="exVendors" value="' + stEsc(v.vendor) + '" placeholder="' + stT('e.g. Ganesh Vegetables') + '"><datalist id="exVendors">' + vendors.map(x => '<option value="' + stEsc(x) + '">').join('') + '</datalist></div>' +
+      '<div class="st-field"><label class="form-label">' + stT('Note (optional)') + '</label><input id="exfNote" class="form-input" value="' + stEsc(v.note) + '" placeholder="' + stT('e.g. 20 kg onions') + '"></div>' +
+      (e && exPaid(e) > 0 && exBalance(e) > 0 ? '<div class="st-sub" style="margin-bottom:8px;">' + stT('Paid so far') + ': ' + stMoney(exPaid(e)) + ' · ' + stT('Balance') + ': ' + stMoney(exBalance(e)) + '</div>' : '') +
+      '<div style="display:flex;gap:8px;margin-top:6px;"><button class="login-btn" style="flex:1;" onclick="saveExpenseForm(' + (e ? '\'' + e.id + '\'' : 'null') + ')">' + stT('Save') + '</button>' +
+      (e ? '<button class="header-btn" style="padding:0 14px;color:#ff8a7d;" onclick="deleteExpense(\'' + e.id + '\')">' + stT('🗑 Delete') + '</button>' : '') + '</div>');
+    setTimeout(() => { const a = document.getElementById('exfAmount'); if (a && !e) a.focus(); }, 60);
+  }
+
+  function saveExpenseForm(id) {
+    const amount = parseFloat(document.getElementById('exfAmount').value);
+    if (!isFinite(amount) || amount <= 0) { showToast(stT('⚠️ Enter an amount')); return; }
+    const old = id ? expenseList.find(x => x.id === id) : null;
+    const status = document.getElementById('exfStatus').value;
+    const date = document.getElementById('exfDate').value || stToday();
+    const mode = document.getElementById('exfMode').value;
+    const payments = old ? exPayments(old).map(p => Object.assign({}, p)) : [];
+    const e = {
+      id: old ? old.id : stId('x'),
+      date, category: exNormCat(exFormCat), amount, mode,
+      vendor: document.getElementById('exfVendor').value.trim(),
+      note: document.getElementById('exfNote').value.trim(),
+      credit: status === 'unpaid' || !!(old && old.credit),
+      dueDate: status === 'unpaid' ? (document.getElementById('exfDue').value || '') : '',
+      payments
+    };
+    if (status === 'paid') {                                   // paid in full → record whatever is still unpaid as a payment
+      const rest = Math.round((amount - payments.reduce((n, p) => n + (Number(p.amount) || 0), 0)) * 100) / 100;
+      if (rest > 0) payments.push({ id: stId('p'), date: (old && exBalance(old) > 0) ? stToday() : date, amount: rest, mode, note: '' });
+    }
+    exFinalize(e);
+    if (old) expenseList[expenseList.indexOf(old)] = e; else expenseList.push(e);
+    if (date.slice(0, 7) !== exMonth) exMonth = date.slice(0, 7);
+    exSaveOne(e);
+    stCloseModal();
+    renderExpenses();
+    showToast('✅ ' + stT('Expense saved') + ': ' + stMoney(amount));
+  }
+
+  function deleteExpense(id) {
+    if (!confirm(stT('Delete this expense?'))) return;
+    expenseList = expenseList.filter(x => x.id !== id);
+    saveExpenseLocal();
+    stCloudDelete('expenses', id);
+    stCloseModal();
+    renderExpenses();
+    showToast(stT('🗑 Expense deleted'));
+  }
+
+  function downloadExpensesCsv() {
+    const ym = exMonth;
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = [['Date', 'Category', 'Amount', 'Paid', 'Balance', 'Status', 'Paid to', 'Due date', 'Note'].join(',')];
+    expenseList.filter(e => (e.date || '').slice(0, 7) === ym).sort((a, b) => (a.date < b.date ? -1 : 1)).forEach(e => {
+      const bal = exBalance(e);
+      lines.push([e.date, q(e.category), e.amount, exPaid(e), bal, bal > 0 ? (exPaid(e) > 0 ? 'Partly paid' : 'Unpaid') : 'Paid', q(e.vendor), e.dueDate || '', q(e.note)].join(','));
+    });
+    const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'MGHR-expenses-' + ym + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
   // ─── SETTINGS ACTIONS ───
   function clearAllCachedData() {
     if (confirm('Clear local memory cache? (You can re-sync anytime)')) {
@@ -2295,6 +2725,7 @@
   function initApp() {
     loadLocalData();
     loadStaffData();
+    loadExpenseData();
     updateDashboardMetrics();
     renderSalesLogList();
     startCloudListeners();
